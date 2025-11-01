@@ -142,6 +142,13 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 
 CORS_ALLOW_CREDENTIALS = True
 
+# CSRF Trusted Origins (for Django admin and forms)
+CSRF_TRUSTED_ORIGINS = [
+    "https://portfolio-backend-434831039257.us-central1.run.app",
+    "https://vasukapoor.com",
+    "https://www.vasukapoor.com",
+]
+
 # REST Framework Settings
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
