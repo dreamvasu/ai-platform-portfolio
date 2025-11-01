@@ -135,6 +135,11 @@ CORS_ALLOWED_ORIGINS = os.getenv(
     "http://localhost:5173,http://127.0.0.1:5173"
 ).split(",")
 
+# Allow all Vercel domains in production
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.vercel\.app$",
+]
+
 CORS_ALLOW_CREDENTIALS = True
 
 # REST Framework Settings
