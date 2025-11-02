@@ -15,11 +15,15 @@ Build a **self-documenting portfolio** showcasing the 12-hour sprint journey fro
 **This is a proof system:**
 - ✅ Proves fast learning (the sprint itself)
 - ✅ Proves full-stack skills (React + Django)
-- ✅ Proves AI/ML skills (RAG chatbot)
+- ✅ Proves AI/ML skills (RAG chatbot + ML/AI paper scraper)
 - ✅ Proves platform skills (K8s, GCP, IaC)
 - ✅ Proves shipping ability (live deployment)
+- ✅ Proves real-world project experience (Ringlet LMS on Azure AKS)
 
-**The Killer Feature:** RAG-powered chatbot that answers questions about YOUR journey using YOUR documentation as the knowledge base.
+**Killer Features:**
+1. RAG-powered chatbot that answers questions about YOUR journey using YOUR documentation
+2. Intelligent ML/AI paper scraper that keeps you updated with latest research, models, and techniques
+3. Showcase of production Ringlet LMS deployed to Azure Kubernetes Service
 
 ---
 
@@ -148,15 +152,45 @@ See [timeline-phases.md](./docs/planning/timeline-phases.md) for detailed breakd
 
 ---
 
+## 🔗 Related Projects
+
+**Ringlet LMS (Azure AKS Deployment)**
+- Location: `/Users/vasukapoor/Jobs/practice/kub/ringlet/ringlet`
+- Django-based Learning Management System deployed to Azure Kubernetes Service
+- Full production setup with Terraform IaC, StatefulSets, HPA, multi-component architecture
+- See [Ringlet CLAUDE.md](../ringlet/ringlet/CLAUDE.md) for complete details
+- **This portfolio showcases Ringlet as a case study** for platform engineering skills
+
+---
+
+## 🚀 Current Deployment
+
+**Frontend:**
+- Platform: Vercel
+- Domain: vasukapoor.com
+- Build: Vite + React
+- Auto-deploy: Pushes to `main` branch trigger deployment
+
+**Backend:**
+- Platform: Google Cloud Run
+- Region: us-central1
+- Database: Cloud SQL PostgreSQL
+- Environment: Production (env.yaml)
+- Deployment: Manual via `gcloud run deploy` (triggers didn't work)
+- Domains: backend.vasukapoor.com, portfolio-backend-eituuhu2yq-uc.a.run.app
+
+---
+
 ## 📝 Important Notes
 
 - **Context Management:** This CLAUDE.md is intentionally short. Use links to access detailed docs when needed.
 - **Cost:** ~$20-30/month (or $0 using free tiers)
-- **Skills Gained:** K8s, GCP, Terraform, RAG systems, full-stack deployment
+- **Skills Gained:** K8s, GCP, Azure, Terraform, RAG systems, ML/AI research tracking, full-stack deployment
 
 ---
 
 **Created:** November 2, 2025
+**Last Updated:** November 3, 2025
 **For:** Wipro AI/ML Platform Engineer role
 
 **Now go build this and win that job.** 🚀
