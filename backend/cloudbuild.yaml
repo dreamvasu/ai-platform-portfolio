@@ -2,6 +2,7 @@ steps:
   # Deploy to Cloud Run using buildpacks (no Dockerfile needed!)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
+    dir: 'backend'
     args:
       - 'run'
       - 'deploy'
@@ -16,7 +17,7 @@ steps:
       - '--memory=2Gi'
       - '--cpu=2'
       - '--timeout=300'
-      - '--service-account=$PROJECT_NUMBER-compute@developer.gserviceaccount.com'
+      - '--service-account=434831039257-compute@developer.gserviceaccount.com'
 
 substitutions:
   _SERVICE_NAME: portfolio-backend
