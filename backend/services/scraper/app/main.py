@@ -4,6 +4,7 @@ Paper Scraper Microservice - FastAPI Application
 
 import logging
 import time
+import httpx
 from datetime import datetime
 from typing import List
 from contextlib import asynccontextmanager
@@ -138,6 +139,64 @@ async def trigger_scrape(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+async def send_webhook_to_django(job_id: str, source: str, papers: List[PaperData]):
+    """
+    Send webhook to Django backend with scraped papers
+
+    Args:
+        job_id: Job ID
+        source: Source of papers (arxiv, etc.)
+        papers: List of scraped papers
+    """
+    try:
+        webhook_url = f"{settings.django_api_url}/api/webhooks/scraper-complete/"
+
+        # Prepare webhook payload
+        payload = {
+            "job_id": job_id,
+            "source": source,
+            "papers": [
+                {
+                    "title": paper.title,
+                    "abstract": paper.abstract,
+                    "authors": paper.authors,
+                    "url": str(paper.url),  # Convert HttpUrl to string
+                    "pdf_url": str(paper.pdf_url) if paper.pdf_url else None,
+                    "published_date": paper.published_date.isoformat() if paper.published_date else None,
+                    "category": paper.category,
+                    "relevance_score": paper.relevance_score,
+                    "tags": paper.tags,
+                    "citation_count": paper.citation_count or 0
+                }
+                for paper in papers
+            ],
+            "total_papers": len(papers),
+            "timestamp": datetime.now().isoformat()
+        }
+
+        # Send webhook with authentication
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                webhook_url,
+                json=payload,
+                headers={
+                    "Authorization": f"Bearer {settings.webhook_secret}",
+                    "Content-Type": "application/json"
+                }
+            )
+
+            if response.status_code in [200, 201]:
+                logger.info(f"Webhook sent successfully to Django: {job_id}")
+                result = response.json()
+                logger.info(f"Django response: {result.get('papers_created', 0)} created, {result.get('papers_updated', 0)} updated")
+            else:
+                logger.warning(f"Webhook failed with status {response.status_code}: {response.text}")
+
+    except Exception as e:
+        # Don't fail the job if webhook fails
+        logger.error(f"Error sending webhook to Django: {str(e)}")
+
+
 async def run_scrape_job(job_id: str, request: ScrapeRequest):
     """
     Run scraping job in background
@@ -180,8 +239,8 @@ async def run_scrape_job(job_id: str, request: ScrapeRequest):
 
         logger.info(f"Scrape job {job_id} completed: {len(papers)} papers found")
 
-        # TODO: Send webhook to Django backend
-        # await send_papers_to_django(papers)
+        # Send webhook to Django backend
+        await send_webhook_to_django(job_id, request.source, papers)
 
     except Exception as e:
         logger.error(f"Scrape job {job_id} failed: {str(e)}")

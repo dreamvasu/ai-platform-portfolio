@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     # Django Backend
     django_api_url: str = "http://localhost:8000"
     django_api_key: Optional[str] = None
+    webhook_secret: str = "dev-secret-change-in-production"  # Must match Django WEBHOOK_SECRET
 
     # Logging
     log_level: str = "INFO"
