@@ -1,1 +1,1 @@
-web: gunicorn --bind :$PORT --workers 1 --threads 8 core.wsgi:application
+web: python manage.py migrate && python manage.py collectstatic --noinput && gunicorn --bind :$PORT --workers 1 --threads 8 core.wsgi:application
