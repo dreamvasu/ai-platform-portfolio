@@ -34,4 +34,9 @@ export const getFeaturedProjects = async () => {
   return response.data;
 };
 
+export const getPapers = async (params = {}) => {
+  const response = await api.get('/papers/', { params });
+  return response.data;
+};
+
 export default api;

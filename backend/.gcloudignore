@@ -33,5 +33,5 @@ staticfiles/
 htmlcov/
 
 # Ignore these from deployment
-chroma_db/
+# chroma_db/ - DEPLOYED NOW for RAG functionality
 *.pyc
