@@ -1,38 +1,26 @@
 steps:
-  # Build the container image using buildpacks
-  - name: 'gcr.io/k8s-skaffold/pack'
-    entrypoint: 'pack'
-    args:
-      - 'build'
-      - 'gcr.io/$PROJECT_ID/portfolio-backend:$COMMIT_SHA'
-      - '--builder=gcr.io/buildpacks/builder:v1'
-      - '--path=.'
-
-  # Push the container image to Container Registry
-  - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'push'
-      - 'gcr.io/$PROJECT_ID/portfolio-backend:$COMMIT_SHA'
-
-  # Deploy container image to Cloud Run
+  # Deploy to Cloud Run using buildpacks (no Dockerfile needed!)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
       - 'run'
       - 'deploy'
       - 'portfolio-backend'
-      - '--image=gcr.io/$PROJECT_ID/portfolio-backend:$COMMIT_SHA'
+      - '--source=.'
       - '--region=us-central1'
       - '--platform=managed'
       - '--allow-unauthenticated'
       - '--set-env-vars=DJANGO_SETTINGS_MODULE=core.settings,GOOGLE_CLOUD_PROJECT=$PROJECT_ID'
       - '--max-instances=10'
+      - '--min-instances=1'
       - '--memory=2Gi'
       - '--cpu=2'
       - '--timeout=300'
+      - '--service-account=$PROJECT_NUMBER-compute@developer.gserviceaccount.com'
 
-images:
-  - 'gcr.io/$PROJECT_ID/portfolio-backend:$COMMIT_SHA'
+substitutions:
+  _SERVICE_NAME: portfolio-backend
+  _REGION: us-central1
 
 options:
   logging: CLOUD_LOGGING_ONLY
