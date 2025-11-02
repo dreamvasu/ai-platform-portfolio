@@ -16,9 +16,9 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            From 65% Match to 90% Match
+            AI/ML Platform Engineer
             <br />
-            <span className="text-blue-500">in 12 Hours</span>
+            <span className="text-blue-500">Production-Ready Solutions</span>
           </motion.h1>
 
           <motion.p
@@ -27,7 +27,7 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            How I transformed into an AI/ML Platform Engineer through an intense learning sprint
+            Building scalable cloud platforms with Kubernetes, multi-tenant architectures, and production-grade deployments
           </motion.p>
 
           <motion.div
@@ -37,24 +37,24 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.6 }}
           >
             <a
-              href="/journey"
+              href="/case-studies"
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition"
             >
-              View Journey
+              View Case Studies
             </a>
             <a
-              href="#demos"
+              href="#projects"
               className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-lg transition"
             >
-              Live Demos
+              Production Projects
             </a>
             <a
-              href="https://github.com/yourusername/ai-platform-portfolio"
+              href="https://github.com/dreamvasu"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-lg transition"
             >
-              GitHub
+              GitHub Portfolio
             </a>
           </motion.div>
 
@@ -66,20 +66,20 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.8 }}
           >
             <div className="text-center">
-              <div className="text-4xl font-bold text-blue-500">8</div>
-              <div className="text-gray-400 mt-2">Technologies Mastered</div>
+              <div className="text-4xl font-bold text-blue-500">10K+</div>
+              <div className="text-gray-400 mt-2">Requests Processed Daily</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-blue-500">12</div>
-              <div className="text-gray-400 mt-2">Hours Invested</div>
+              <div className="text-4xl font-bold text-blue-500">99.9%</div>
+              <div className="text-gray-400 mt-2">Production Uptime</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-blue-500">50+</div>
-              <div className="text-gray-400 mt-2">GitHub Commits</div>
+              <div className="text-4xl font-bold text-blue-500">20+</div>
+              <div className="text-gray-400 mt-2">Enterprise Tenants</div>
             </div>
             <div className="text-center">
               <div className="text-4xl font-bold text-blue-500">3</div>
-              <div className="text-gray-400 mt-2">Live Deployments</div>
+              <div className="text-gray-400 mt-2">Production Platforms</div>
             </div>
           </motion.div>
         </motion.div>

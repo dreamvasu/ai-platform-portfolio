@@ -129,15 +129,15 @@ export default function Home() {
       {/* CTA Section */}
       <section className="py-20 bg-gray-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold mb-6">Ready to see how I did it?</h2>
+          <h2 className="text-4xl font-bold mb-6">See My Work in Production</h2>
           <p className="text-xl text-gray-300 mb-8">
-            Explore my complete learning journey and technical implementations
+            Explore detailed case studies, architectural decisions, and real-world deployments
           </p>
           <a
-            href="/journey"
+            href="/case-studies"
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition inline-block"
           >
-            View Full Journey
+            View Case Studies
           </a>
         </div>
       </section>
