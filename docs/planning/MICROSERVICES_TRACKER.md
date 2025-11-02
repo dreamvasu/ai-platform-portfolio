@@ -353,5 +353,75 @@ Phase 6 (Deploy & Polish): ░░░░░░░░░░░░░░░░░�
 
 **🔥 LET'S BUILD! 🔥**
 
-Last sync: Just now
-Next update: After completing Phase 1
+Last sync: November 3, 2025 - 2:57 AM
+Next update: After completing Paper Scraper Service
+
+---
+
+## 📝 Git Commit History
+
+### Commit 2: Add microservices directory structure
+**Hash:** 3e8bf1d
+**Date:** November 3, 2025 - 2:57 AM
+**Author:** Vasu Kapoor + Claude
+
+**Changes:**
+- Created `services/` directory structure
+- Added subdirectories: `scraper/`, `analytics/`, `document-processor/`
+- Added `.gitkeep` files to track empty directories
+
+**Impact:** Directory structure ready for microservice implementation
+
+---
+
+### Commit 1: Add microservices architecture and ML/AI paper scraper
+**Hash:** b10e4d9
+**Date:** November 3, 2025 - 2:56 AM
+**Author:** Vasu Kapoor + Claude
+
+**Major Changes:**
+- Designed distributed microservices architecture (4 services)
+- Created comprehensive microservices master plan (20-25h timeline)
+- Added Paper and ScraperJob models with full CRUD
+- Implemented arXiv paper scraper as Django management command
+- Created API endpoints for papers with filtering and pagination
+
+**Microservices Designed:**
+1. Django Backend (existing) - Portfolio API + RAG chatbot
+2. Paper Scraper (FastAPI) - ML/AI paper scraping service
+3. Analytics (Node.js) - Real-time metrics and tracking
+4. Document Processor (FastAPI + Celery) - PDF processing
+
+**Backend Files Updated:**
+- `models.py`: Paper model (8 categories, relevance scoring, tags)
+- `models.py`: ScraperJob model (history tracking)
+- `serializers.py`: PaperSerializer, PaperListSerializer, ScraperJobSerializer
+- `views.py`: PaperViewSet with filtering, trending, recent, by_category
+- `views.py`: ScraperJobViewSet with history tracking
+- `admin.py`: Full admin interface for papers and jobs
+- `urls.py`: Routes for `/api/papers/` and `/api/scraper-jobs/`
+- `management/commands/scrape_papers.py`: arXiv scraper (tested, working)
+
+**Documentation Created:**
+- `MICROSERVICES_MASTER_PLAN.md`: Complete architecture design
+- `MICROSERVICES_TRACKER.md`: Implementation tracker (this file)
+- `architecture.md`: Updated with microservices diagrams
+- `CLAUDE.md`: Added Ringlet LMS reference and deployment info
+
+**Testing:**
+- ✅ Scraper successfully fetched 10 papers from arXiv
+- ✅ Migrations applied to database
+- ✅ Models working in Django admin
+- ✅ API endpoints responding correctly
+
+**Lines Changed:**
+- 14 files changed
+- 2,385 insertions(+)
+- 52 deletions(-)
+
+**Impact:** Phase 1 planning complete, ready to build microservices
+
+---
+
+**Total Commits:** 2
+**Next Commit:** Paper Scraper FastAPI microservice implementation
