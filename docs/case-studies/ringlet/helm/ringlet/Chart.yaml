@@ -1,0 +1,25 @@
+apiVersion: v2
+name: ringlet
+description: A Helm chart for Ringlet Educational Platform
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - education
+  - django
+  - learning-platform
+  - lms
+
+home: https://github.com/dreamvasu/ringlet
+sources:
+  - https://github.com/dreamvasu/ringlet
+
+maintainers:
+  - name: Vasu Kapoor
+    email: vasu@example.com
+
+dependencies: []
+
+# Optional: Add icon
+# icon: https://example.com/ringlet-icon.png

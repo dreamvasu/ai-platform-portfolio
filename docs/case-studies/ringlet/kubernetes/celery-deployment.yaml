@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ringlet-celery-worker
+  namespace: ringlet
+  labels:
+    app: ringlet
+    component: worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ringlet
+      component: worker
+  template:
+    metadata:
+      labels:
+        app: ringlet
+        component: worker
+    spec:
+      initContainers:
+      # Wait for Redis
+      - name: wait-for-redis
+        image: busybox:1.36
+        command:
+          - sh
+          - -c
+          - |
+            until nc -z redis-service 6379; do
+              echo "Waiting for Redis..."
+              sleep 2
+            done
+
+      containers:
+      - name: celery-worker
+        image: gcr.io/YOUR_PROJECT_ID/ringlet:latest  # Replace with your image
+        command:
+          - celery
+          - -A
+          - ringlet
+          - worker
+          - --loglevel=info
+          - --concurrency=4
+        envFrom:
+        - configMapRef:
+            name: ringlet-config
+        - secretRef:
+            name: ringlet-secrets
+        volumeMounts:
+        - name: media-files
+          mountPath: /usr/src/app/media
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+
+      volumes:
+      - name: media-files
+        persistentVolumeClaim:
+          claimName: django-media-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ringlet-celery-beat
+  namespace: ringlet
+  labels:
+    app: ringlet
+    component: scheduler
+spec:
+  replicas: 1  # Only one beat scheduler
+  selector:
+    matchLabels:
+      app: ringlet
+      component: scheduler
+  template:
+    metadata:
+      labels:
+        app: ringlet
+        component: scheduler
+    spec:
+      containers:
+      - name: celery-beat
+        image: gcr.io/YOUR_PROJECT_ID/ringlet:latest  # Replace with your image
+        command:
+          - celery
+          - -A
+          - ringlet
+          - beat
+          - --loglevel=info
+        envFrom:
+        - configMapRef:
+            name: ringlet-config
+        - secretRef:
+            name: ringlet-secrets
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"

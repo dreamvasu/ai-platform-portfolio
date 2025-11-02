@@ -1,86 +1,173 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function CaseStudies() {
+  const [selectedCase, setSelectedCase] = useState('calibra');
   const [activeTab, setActiveTab] = useState('overview');
 
-  const caseStudy = {
-    title: "Calibra - Enterprise Calibration Management Platform",
-    role: "Lead Backend Architect & Platform Engineer",
-    duration: "March 2024 - October 2024",
-    industry: "Scientific Instrumentation & Calibration Services",
-    deployment: "Azure App Service (Production)",
+  const caseStudies = {
+    calibra: {
+      title: "Calibra - Enterprise Calibration Management Platform",
+      role: "Lead Backend Architect & Platform Engineer",
+      duration: "March 2024 - October 2024",
+      industry: "Scientific Instrumentation & Calibration Services",
+      deployment: "Azure App Service (Production)",
+      category: "Production Systems",
 
-    impact: [
-      { metric: "10,000+", description: "Calibration requests annually" },
-      { metric: "40%", description: "Reduced turnaround time" },
-      { metric: "200+", description: "Hours/month saved" },
-      { metric: "99.9%", description: "Uptime SLA" }
-    ],
+      impact: [
+        { metric: "10,000+", description: "Calibration requests annually" },
+        { metric: "40%", description: "Reduced turnaround time" },
+        { metric: "200+", description: "Hours/month saved" },
+        { metric: "99.9%", description: "Uptime SLA" }
+      ],
 
-    techStack: [
-      { name: "Django 4.2", color: "green" },
-      { name: "PostgreSQL", color: "blue" },
-      { name: "Redis", color: "red" },
-      { name: "Celery", color: "emerald" },
-      { name: "Docker", color: "cyan" },
-      { name: "Azure", color: "blue" },
-      { name: "Terraform", color: "purple" },
-      { name: "GitLab CI/CD", color: "orange" }
-    ],
+      techStack: [
+        { name: "Django 4.2", color: "green" },
+        { name: "PostgreSQL", color: "blue" },
+        { name: "Redis", color: "red" },
+        { name: "Celery", color: "emerald" },
+        { name: "Docker", color: "cyan" },
+        { name: "Azure", color: "blue" },
+        { name: "Terraform", color: "purple" },
+        { name: "GitLab CI/CD", color: "orange" }
+      ],
 
-    challenges: [
-      {
-        title: "Multi-Tenant Architecture",
-        problem: "Complete data isolation for 20+ clients with custom branding and workflows",
-        solution: "Implemented django-tenants with PostgreSQL schema-based isolation",
-        result: "Zero cross-tenant data leakage, dynamic provisioning, tenant-aware backups"
-      },
-      {
-        title: "High-Volume PDF Generation",
-        problem: "500+ calibration certificates daily, initial 30s blocking generation time",
-        solution: "Async PDF generation with Celery distributed workers and caching",
-        result: "Reduced to 3-5s, 95% cache hit rate, zero timeout errors"
-      },
-      {
-        title: "Database Performance",
-        problem: "Complex queries with 15+ joins causing 5-10s page loads",
-        solution: "Query optimization with select_related, prefetch_related, strategic indexes",
-        result: "200-400ms query time, 60% CPU reduction, supports 1000+ concurrent users"
-      },
-      {
-        title: "Zero-Downtime Migrations",
-        problem: "50GB+ data across 20 tenants, traditional migrations locked tables 10+ minutes",
-        solution: "Blue-green migration strategy with tenant-specific rollout",
-        result: "Zero downtime, failed migrations caught before rollout"
+      challenges: [
+        {
+          title: "Multi-Tenant Architecture",
+          problem: "Complete data isolation for 20+ clients with custom branding and workflows",
+          solution: "Implemented django-tenants with PostgreSQL schema-based isolation",
+          result: "Zero cross-tenant data leakage, dynamic provisioning, tenant-aware backups"
+        },
+        {
+          title: "High-Volume PDF Generation",
+          problem: "500+ calibration certificates daily, initial 30s blocking generation time",
+          solution: "Async PDF generation with Celery distributed workers and caching",
+          result: "Reduced to 3-5s, 95% cache hit rate, zero timeout errors"
+        },
+        {
+          title: "Database Performance",
+          problem: "Complex queries with 15+ joins causing 5-10s page loads",
+          solution: "Query optimization with select_related, prefetch_related, strategic indexes",
+          result: "200-400ms query time, 60% CPU reduction, supports 1000+ concurrent users"
+        },
+        {
+          title: "Zero-Downtime Migrations",
+          problem: "50GB+ data across 20 tenants, traditional migrations locked tables 10+ minutes",
+          solution: "Blue-green migration strategy with tenant-specific rollout",
+          result: "Zero downtime, failed migrations caught before rollout"
+        }
+      ],
+
+      metrics: {
+        performance: [
+          { label: "API Response Time (p50)", value: "120ms" },
+          { label: "API Response Time (p95)", value: "450ms" },
+          { label: "PDF Generation Time", value: "3-5s" },
+          { label: "Database Query Time", value: "35ms" },
+          { label: "Concurrent Users", value: "1000+" },
+          { label: "Daily API Requests", value: "500K+" }
+        ],
+        scale: [
+          { label: "Active Tenants", value: "20" },
+          { label: "Total Users", value: "800+" },
+          { label: "SRFs/Year", value: "10,000+" },
+          { label: "Database Size", value: "85GB" },
+          { label: "Blob Storage", value: "50GB" },
+          { label: "Uptime (6 months)", value: "99.94%" }
+        ],
+        code: [
+          { label: "Test Coverage", value: "87%" },
+          { label: "Lines of Code", value: "45,000+" },
+          { label: "API Endpoints", value: "120+" },
+          { label: "Database Tables", value: "80+" },
+          { label: "Celery Tasks", value: "25" }
+        ]
       }
-    ],
+    },
 
-    metrics: {
-      performance: [
-        { label: "API Response Time (p50)", value: "120ms" },
-        { label: "API Response Time (p95)", value: "450ms" },
-        { label: "PDF Generation Time", value: "3-5s" },
-        { label: "Database Query Time", value: "35ms" },
-        { label: "Concurrent Users", value: "1000+" },
-        { label: "Daily API Requests", value: "500K+" }
+    ringlet: {
+      title: "Ringlet - Educational Platform on Kubernetes",
+      role: "Platform Engineer & DevOps Architect",
+      duration: "November 2024",
+      industry: "Educational Technology & E-Learning",
+      deployment: "Kubernetes (GKE-Ready)",
+      category: "Platform Engineering",
+
+      impact: [
+        { metric: "3-10", description: "Auto-scaling pods" },
+        { metric: "60%", description: "Image size reduction" },
+        { metric: "< 200ms", description: "Average response time" },
+        { metric: "99.9%", description: "Target availability" }
       ],
-      scale: [
-        { label: "Active Tenants", value: "20" },
-        { label: "Total Users", value: "800+" },
-        { label: "SRFs/Year", value: "10,000+" },
-        { label: "Database Size", value: "85GB" },
-        { label: "Blob Storage", value: "50GB" },
-        { label: "Uptime (6 months)", value: "99.94%" }
+
+      techStack: [
+        { name: "Django 4.x", color: "green" },
+        { name: "PostgreSQL 15", color: "blue" },
+        { name: "Redis 7", color: "red" },
+        { name: "Celery", color: "emerald" },
+        { name: "Kubernetes", color: "blue" },
+        { name: "Docker", color: "cyan" },
+        { name: "Helm 3", color: "purple" },
+        { name: "GKE", color: "blue" }
       ],
-      code: [
-        { label: "Test Coverage", value: "87%" },
-        { label: "Lines of Code", value: "45,000+" },
-        { label: "API Endpoints", value: "120+" },
-        { label: "Database Tables", value: "80+" },
-        { label: "Celery Tasks", value: "25" }
-      ]
+
+      challenges: [
+        {
+          title: "Container Optimization",
+          problem: "Large Docker images increasing deployment time and storage costs",
+          solution: "Multi-stage Docker builds separating build and runtime dependencies",
+          result: "60% image size reduction, faster deployments, reduced storage costs"
+        },
+        {
+          title: "Database Migrations in K8s",
+          problem: "Race conditions during rolling updates when multiple pods run migrations",
+          solution: "Init containers with single-run migrations before pod startup",
+          result: "Clean separation of concerns, no race conditions, zero failed migrations"
+        },
+        {
+          title: "Shared Media Storage",
+          problem: "Multiple pods need read-write access to educational content (videos, PDFs)",
+          solution: "ReadWriteMany PVCs using GKE Filestore for shared volume access",
+          result: "All pods access same media files, consistent user experience"
+        },
+        {
+          title: "Celery Beat Singleton",
+          problem: "Multiple Celery Beat schedulers creating duplicate scheduled tasks",
+          solution: "Single-replica deployment for beat, separate from scalable workers",
+          result: "No duplicate tasks, clean scheduler separation"
+        }
+      ],
+
+      metrics: {
+        performance: [
+          { label: "Response Time (p50)", value: "< 200ms" },
+          { label: "Response Time (p95)", value: "< 500ms" },
+          { label: "Pod Startup Time", value: "< 30s" },
+          { label: "Scale-up Time", value: "< 60s" },
+          { label: "Throughput", value: "1000+ req/s" },
+          { label: "Resource Efficiency", value: "60-70% CPU" }
+        ],
+        scale: [
+          { label: "Min Replicas", value: "3" },
+          { label: "Max Replicas", value: "10" },
+          { label: "Celery Workers", value: "2-6" },
+          { label: "DB Storage", value: "10Gi" },
+          { label: "Media Storage", value: "20Gi" },
+          { label: "Target Uptime", value: "99.9%" }
+        ],
+        code: [
+          { label: "K8s Manifests", value: "9 files" },
+          { label: "Helm Chart", value: "Complete" },
+          { label: "Docker Layers", value: "Multi-stage" },
+          { label: "Health Checks", value: "Liveness + Readiness" },
+          { label: "HPA Enabled", value: "Yes" }
+        ]
+      }
     }
   };
+
+  const caseStudy = caseStudies[selectedCase];
 
   const getColorClass = (color) => {
     const colors = {
@@ -97,6 +184,40 @@ export default function CaseStudies() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Case Study Selector */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex gap-4">
+            <button
+              onClick={() => { setSelectedCase('calibra'); setActiveTab('overview'); }}
+              className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                selectedCase === 'calibra'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <div className="text-left">
+                <div className="font-bold">Calibra</div>
+                <div className="text-xs opacity-80">Production Systems</div>
+              </div>
+            </button>
+            <button
+              onClick={() => { setSelectedCase('ringlet'); setActiveTab('overview'); }}
+              className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                selectedCase === 'ringlet'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <div className="text-left">
+                <div className="font-bold">Ringlet</div>
+                <div className="text-xs opacity-80">Platform Engineering</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -356,12 +477,21 @@ custom-domain.com     → mapped tenant schema`}</pre>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-4">Want to know more?</h2>
           <p className="text-xl text-gray-300 mb-8">
-            Ask the AI chatbot about Calibra's architecture, challenges, or any technical details
+            Ask the AI chatbot about {caseStudy.title.split(' - ')[0]}'s architecture, challenges, or any technical details
           </p>
-          <p className="text-gray-400">
-            Try asking: "Tell me about Calibra's multi-tenant architecture" or
-            "How did Vasu optimize the PDF generation?"
-          </p>
+          <div className="space-y-2 text-gray-400">
+            {selectedCase === 'calibra' ? (
+              <>
+                <p>Try asking: "Tell me about Calibra's multi-tenant architecture"</p>
+                <p>Or: "How did Vasu optimize the PDF generation?"</p>
+              </>
+            ) : (
+              <>
+                <p>Try asking: "Tell me about Ringlet's Kubernetes deployment"</p>
+                <p>Or: "How did Vasu optimize Docker images for Ringlet?"</p>
+              </>
+            )}
+          </div>
         </div>
       </section>
     </div>

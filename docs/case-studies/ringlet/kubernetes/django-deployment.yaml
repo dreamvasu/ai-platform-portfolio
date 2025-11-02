@@ -1,0 +1,144 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: django-media-pvc
+  namespace: ringlet
+spec:
+  accessModes:
+    - ReadWriteMany  # Multiple pods need access
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: standard-rwx  # GKE Filestore or similar
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ringlet-django
+  namespace: ringlet
+  labels:
+    app: ringlet
+    component: web
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: ringlet
+      component: web
+  template:
+    metadata:
+      labels:
+        app: ringlet
+        component: web
+    spec:
+      initContainers:
+      # Wait for database
+      - name: wait-for-db
+        image: busybox:1.36
+        command:
+          - sh
+          - -c
+          - |
+            until nc -z postgres-service 5432; do
+              echo "Waiting for PostgreSQL..."
+              sleep 2
+            done
+      # Run migrations
+      - name: migrate
+        image: gcr.io/YOUR_PROJECT_ID/ringlet:latest  # Replace with your image
+        command:
+          - python
+          - manage.py
+          - migrate
+          - --noinput
+        envFrom:
+        - configMapRef:
+            name: ringlet-config
+        - secretRef:
+            name: ringlet-secrets
+      # Collect static files
+      - name: collectstatic
+        image: gcr.io/YOUR_PROJECT_ID/ringlet:latest  # Replace with your image
+        command:
+          - python
+          - manage.py
+          - collectstatic
+          - --noinput
+        envFrom:
+        - configMapRef:
+            name: ringlet-config
+        - secretRef:
+            name: ringlet-secrets
+        volumeMounts:
+        - name: static-files
+          mountPath: /usr/src/app/staticfiles
+
+      containers:
+      - name: django
+        image: gcr.io/YOUR_PROJECT_ID/ringlet:latest  # Replace with your image
+        ports:
+        - containerPort: 8000
+          name: http
+        envFrom:
+        - configMapRef:
+            name: ringlet-config
+        - secretRef:
+            name: ringlet-secrets
+        volumeMounts:
+        - name: media-files
+          mountPath: /usr/src/app/media
+        - name: static-files
+          mountPath: /usr/src/app/staticfiles
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+
+      volumes:
+      - name: media-files
+        persistentVolumeClaim:
+          claimName: django-media-pvc
+      - name: static-files
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ringlet-service
+  namespace: ringlet
+  labels:
+    app: ringlet
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: ringlet
+    component: web

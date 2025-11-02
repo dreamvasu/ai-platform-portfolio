@@ -1,0 +1,176 @@
+# Default values for Ringlet Helm chart
+
+# Global settings
+global:
+  projectId: "YOUR_PROJECT_ID"
+  domain: "ringlet.example.com"
+
+# Namespace
+namespace: ringlet
+
+# Django Application
+django:
+  image:
+    repository: gcr.io/YOUR_PROJECT_ID/ringlet
+    tag: latest
+    pullPolicy: Always
+
+  replicaCount: 3
+
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8000
+
+  env:
+    DJANGO_SETTINGS_MODULE: "ringlet.settings"
+    DEBUG: "False"
+    STATIC_ROOT: "/usr/src/app/staticfiles"
+    MEDIA_ROOT: "/usr/src/app/media"
+
+  # Secrets (should be overridden)
+  secrets:
+    secretKey: "CHANGE_ME_GENERATE_STRONG_SECRET_KEY"
+    dbPassword: "CHANGE_ME_IN_PRODUCTION"
+
+# Celery Workers
+celery:
+  worker:
+    replicaCount: 2
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 6
+      targetCPUUtilizationPercentage: 75
+
+  beat:
+    replicaCount: 1
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+
+# PostgreSQL
+postgresql:
+  enabled: true
+  image:
+    repository: postgres
+    tag: 15-alpine
+
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: "standard-rwo"
+
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+  env:
+    POSTGRES_DB: "ringlet_db"
+    POSTGRES_USER: "ringlet_user"
+    # POSTGRES_PASSWORD from secrets
+
+  service:
+    name: postgres-service
+    port: 5432
+
+# Redis
+redis:
+  enabled: true
+  image:
+    repository: redis
+    tag: 7-alpine
+
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+  service:
+    name: redis-service
+    port: 6379
+
+# Ingress
+ingress:
+  enabled: true
+  className: "gce"  # or "nginx"
+
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "ringlet-ip"
+    networking.gke.io/managed-certificates: "ringlet-cert"
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+
+  hosts:
+    - host: ringlet.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+
+  tls:
+    enabled: true
+    secretName: ringlet-tls
+
+# Persistent Storage
+persistence:
+  media:
+    enabled: true
+    size: 20Gi
+    storageClass: "standard-rwx"  # ReadWriteMany for multiple pods
+    accessMode: ReadWriteMany
+
+# Monitoring (optional)
+monitoring:
+  enabled: false
+  serviceMonitor:
+    enabled: false
+
+# Security
+podSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+
+# Network Policy (optional)
+networkPolicy:
+  enabled: false

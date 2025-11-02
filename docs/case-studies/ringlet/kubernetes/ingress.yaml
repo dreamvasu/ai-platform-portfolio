@@ -1,0 +1,65 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ringlet-ingress
+  namespace: ringlet
+  annotations:
+    # GKE Ingress annotations
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "ringlet-ip"
+    networking.gke.io/managed-certificates: "ringlet-cert"
+    # HTTPS redirect
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+    # Timeout settings
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+spec:
+  rules:
+  - host: ringlet.example.com  # Replace with your domain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ringlet-service
+            port:
+              number: 80
+---
+# Managed Certificate for HTTPS (GKE)
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: ringlet-cert
+  namespace: ringlet
+spec:
+  domains:
+    - ringlet.example.com  # Replace with your domain
+---
+# Alternative: Nginx Ingress with cert-manager
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: ringlet-ingress-nginx
+#   namespace: ringlet
+#   annotations:
+#     cert-manager.io/cluster-issuer: "letsencrypt-prod"
+#     nginx.ingress.kubernetes.io/ssl-redirect: "true"
+# spec:
+#   ingressClassName: nginx
+#   tls:
+#   - hosts:
+#     - ringlet.example.com
+#     secretName: ringlet-tls
+#   rules:
+#   - host: ringlet.example.com
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: ringlet-service
+#             port:
+#               number: 80

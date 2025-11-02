@@ -1,0 +1,74 @@
+# Optimized Multi-stage Dockerfile for Ringlet
+# Educational Platform - Django Application
+
+# Build stage
+FROM python:3.11-slim-bullseye AS builder
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /build
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    postgresql-client \
+    libpq-dev \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy and install Python dependencies
+COPY requirements.txt .
+RUN pip install --user --no-cache-dir -r requirements.txt
+
+# Runtime stage
+FROM python:3.11-slim-bullseye
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH=/home/app/.local/bin:$PATH \
+    DJANGO_SETTINGS_MODULE=ringlet.settings
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd -m -u 1000 app
+
+WORKDIR /usr/src/app
+
+# Copy Python dependencies from builder
+COPY --from=builder --chown=app:app /root/.local /home/app/.local
+
+# Copy application code
+COPY --chown=app:app . .
+
+# Create necessary directories
+RUN mkdir -p staticfiles media logs && \
+    chown -R app:app staticfiles media logs
+
+# Switch to non-root user
+USER app
+
+# Collect static files (optional, can be done in entrypoint)
+# RUN python manage.py collectstatic --noinput
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health/ || exit 1
+
+EXPOSE 8000
+
+# Use entrypoint script
+ENTRYPOINT ["./entrypoint.sh"]
+
+# Default command - run with Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "--timeout", "120", "ringlet.wsgi:application"]

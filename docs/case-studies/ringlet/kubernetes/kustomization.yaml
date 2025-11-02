@@ -1,0 +1,48 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ringlet
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - secrets.yaml
+  - postgres-deployment.yaml
+  - redis-deployment.yaml
+  - django-deployment.yaml
+  - celery-deployment.yaml
+  - ingress.yaml
+  - hpa.yaml
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/name: ringlet
+  app.kubernetes.io/version: "1.0.0"
+  app.kubernetes.io/managed-by: kustomize
+
+# Image transformations (update image tags)
+images:
+  - name: gcr.io/YOUR_PROJECT_ID/ringlet
+    newTag: latest  # Change to specific version tag in production
+
+# ConfigMap and Secret generators (alternative to static files)
+# configMapGenerator:
+#   - name: ringlet-config
+#     literals:
+#       - DJANGO_SETTINGS_MODULE=ringlet.settings
+#       - DEBUG=False
+
+# secretGenerator:
+#   - name: ringlet-secrets
+#     literals:
+#       - DB_PASSWORD=CHANGE_ME
+
+# Patches for environment-specific changes
+# patches:
+#   - target:
+#       kind: Deployment
+#       name: ringlet-django
+#     patch: |-
+#       - op: replace
+#         path: /spec/replicas
+#         value: 5
