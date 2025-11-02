@@ -26,7 +26,15 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-3!0o)7i&m)@y=11#uvw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").replace(":", ",").split(",")
+
+# Always allow Cloud Run URLs
+ALLOWED_HOSTS.extend([
+    "portfolio-backend-434831039257.us-central1.run.app",
+    "backend.vasukapoor.com",
+    "vasukapoor.com",
+    "www.vasukapoor.com",
+])
 
 
 # Application definition
