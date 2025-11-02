@@ -1,0 +1,36 @@
+# Paper Scraper Microservice - Requirements
+# Python 3.11+
+# Tested and stable versions
+
+# FastAPI and ASGI server
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# HTTP client (async)
+httpx==0.25.1
+aiohttp==3.9.1
+
+# HTML/XML parsing
+beautifulsoup4==4.12.2
+lxml==4.9.3
+feedparser==6.0.10
+
+# Data validation and utilities
+python-dateutil==2.8.2
+pytz==2023.3
+
+# Logging and monitoring
+python-json-logger==2.0.7
+
+# Environment variables
+python-dotenv==1.0.0
+
+# Health check and metrics
+prometheus-client==0.19.0
+
+# Testing (optional, for local dev)
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.1  # For testing async endpoints
