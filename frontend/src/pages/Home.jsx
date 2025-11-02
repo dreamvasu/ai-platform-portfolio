@@ -168,7 +168,7 @@ export default function Home() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Papers Scraped:</span>
-                  <span className="font-medium text-blue-600">{papers.length}+</span>
+                  <span className="font-medium text-blue-600">50+</span>
                 </div>
               </div>
             </div>
