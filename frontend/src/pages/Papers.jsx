@@ -154,7 +154,7 @@ export default function Papers() {
                     : paper.abstract}
                 </p>
 
-                {paper.tags && paper.tags.length > 0 && (
+                {paper.tags && Array.isArray(paper.tags) && paper.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-4">
                     {paper.tags.map((tag, idx) => (
                       <span

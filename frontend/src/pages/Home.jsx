@@ -96,16 +96,18 @@ export default function Home() {
                 <div key={project.id} className="bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition">
                   <h3 className="text-2xl font-bold mb-4">{project.title}</h3>
                   <p className="text-gray-600 mb-4">{project.description}</p>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {project.tech_stack.map((tech) => (
-                      <span
-                        key={tech.id}
-                        className={`px-3 py-1 rounded text-sm font-medium bg-${tech.color}-100 ${getColorClass(tech.color)}`}
-                      >
-                        {tech.name}
-                      </span>
-                    ))}
-                  </div>
+                  {project.tech_stack && Array.isArray(project.tech_stack) && project.tech_stack.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {project.tech_stack.map((tech) => (
+                        <span
+                          key={tech.id}
+                          className={`px-3 py-1 rounded text-sm font-medium bg-${tech.color}-100 ${getColorClass(tech.color)}`}
+                        >
+                          {tech.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   <div className="flex gap-4">
                     {project.github_url && (
                       <a
