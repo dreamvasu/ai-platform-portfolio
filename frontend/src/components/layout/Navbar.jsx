@@ -31,6 +31,9 @@ export default function Navbar() {
               <Link to="/rag" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700">
                 RAG
               </Link>
+              <Link to="/hadr" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700">
+                HA/DR
+              </Link>
               <Link to="/case-studies" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700">
                 Case Studies
               </Link>

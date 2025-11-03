@@ -8,6 +8,7 @@ import RAG from './pages/RAG';
 import CaseStudies from './pages/CaseStudies';
 import About from './pages/About';
 import Papers from './pages/Papers';
+import HADR from './pages/HADR';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="kubernetes" element={<Kubernetes />} />
           <Route path="gcp" element={<GCP />} />
           <Route path="rag" element={<RAG />} />
+          <Route path="hadr" element={<HADR />} />
           <Route path="case-studies" element={<CaseStudies />} />
           <Route path="about" element={<About />} />
         </Route>
