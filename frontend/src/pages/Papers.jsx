@@ -148,11 +148,13 @@ export default function Papers() {
                   </div>
                 </div>
 
-                <p className="text-gray-700 leading-relaxed mb-4">
-                  {paper.abstract.length > 400
-                    ? `${paper.abstract.slice(0, 400)}...`
-                    : paper.abstract}
-                </p>
+                {paper.abstract && (
+                  <p className="text-gray-700 leading-relaxed mb-4">
+                    {paper.abstract.length > 400
+                      ? `${paper.abstract.slice(0, 400)}...`
+                      : paper.abstract}
+                  </p>
+                )}
 
                 {paper.tags && Array.isArray(paper.tags) && paper.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-4">
