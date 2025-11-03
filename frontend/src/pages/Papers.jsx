@@ -25,11 +25,10 @@ export default function Papers() {
 
   const getCategoryColor = (category) => {
     const colors = {
-      mlops: 'bg-blue-100 text-blue-700',
-      platform: 'bg-green-100 text-green-700',
-      kubernetes: 'bg-purple-100 text-purple-700',
-      ai: 'bg-orange-100 text-orange-700',
-      ml: 'bg-pink-100 text-pink-700',
+      llm: 'bg-blue-100 text-blue-700',
+      nlp: 'bg-green-100 text-green-700',
+      multimodal: 'bg-purple-100 text-purple-700',
+      mlops: 'bg-orange-100 text-orange-700',
     };
     return colors[category] || 'bg-gray-100 text-gray-700';
   };
@@ -50,7 +49,7 @@ export default function Papers() {
           <div className="mt-8 flex items-center gap-4">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg px-6 py-3">
               <div className="text-3xl font-bold text-blue-400">{papers.length}</div>
-              <div className="text-sm text-gray-300">Papers Collected</div>
+              <div className="text-sm text-gray-300">Blog Posts</div>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg px-6 py-3">
               <div className="text-3xl font-bold text-green-400">Live</div>
@@ -65,17 +64,17 @@ export default function Papers() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-wrap gap-4 items-center justify-between">
             <div className="flex gap-2">
-              {['all', 'mlops', 'platform', 'kubernetes', 'ai', 'ml'].map((cat) => (
+              {['all', 'llm', 'nlp', 'multimodal', 'mlops'].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setFilter(cat)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all capitalize ${
+                  className={`px-4 py-2 rounded-lg font-medium transition-all uppercase ${
                     filter === cat
                       ? 'bg-blue-600 text-white shadow-lg'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  {cat}
+                  {cat === 'all' ? 'All' : cat}
                 </button>
               ))}
             </div>
@@ -97,11 +96,11 @@ export default function Papers() {
         {loading ? (
           <div className="text-center text-gray-500 py-20">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p>Loading papers...</p>
+            <p>Loading AI updates...</p>
           </div>
         ) : filteredPapers.length === 0 ? (
           <div className="text-center text-gray-500 py-20">
-            <p className="text-xl">No papers found for this filter.</p>
+            <p className="text-xl">No updates found for this filter.</p>
           </div>
         ) : (
           <div className="space-y-6">
@@ -177,19 +176,11 @@ export default function Papers() {
                     className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium transition-colors"
                   >
                     <ExternalLink className="w-4 h-4" />
-                    View on arXiv
+                    Read Full Article
                   </a>
-                  {paper.pdf_url && (
-                    <a
-                      href={paper.pdf_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-green-600 hover:text-green-800 font-medium transition-colors"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      Download PDF
-                    </a>
-                  )}
+                  <span className="text-sm text-gray-500">
+                    {paper.source_display}
+                  </span>
                 </div>
               </article>
             ))}
@@ -201,11 +192,11 @@ export default function Papers() {
       {!loading && papers.length > 0 && (
         <section className="bg-gray-900 text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold mb-8 text-center">Research Collection Metrics</h2>
+            <h2 className="text-3xl font-bold mb-8 text-center">AI Updates Metrics</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 text-center">
                 <div className="text-4xl font-bold text-blue-400 mb-2">{papers.length}</div>
-                <div className="text-sm text-gray-300">Total Papers</div>
+                <div className="text-sm text-gray-300">Total Updates</div>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 text-center">
                 <div className="text-4xl font-bold text-green-400 mb-2">
@@ -221,9 +212,9 @@ export default function Papers() {
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 text-center">
                 <div className="text-4xl font-bold text-orange-400 mb-2">
-                  {papers.reduce((sum, p) => sum + (p.citation_count || 0), 0)}
+                  {new Set(papers.map(p => p.source_display)).size}
                 </div>
-                <div className="text-sm text-gray-300">Total Citations</div>
+                <div className="text-sm text-gray-300">AI Companies</div>
               </div>
             </div>
           </div>
