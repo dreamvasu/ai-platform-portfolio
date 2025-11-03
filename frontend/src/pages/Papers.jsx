@@ -43,10 +43,9 @@ export default function Papers() {
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-5xl font-bold mb-4">Research Papers</h1>
+          <h1 className="text-5xl font-bold mb-4">AI Industry Updates</h1>
           <p className="text-xl text-gray-300 max-w-3xl">
-            Curated collection of cutting-edge ML/AI research papers relevant to platform engineering,
-            MLOps, and production AI systems. Automatically scraped and categorized from arXiv.
+            Latest model releases, research breakthroughs, and AI company announcements from OpenAI, Google AI, Microsoft, HuggingFace, and more. Automatically scraped and curated to keep you ahead of industry trends.
           </p>
           <div className="mt-8 flex items-center gap-4">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg px-6 py-3">
