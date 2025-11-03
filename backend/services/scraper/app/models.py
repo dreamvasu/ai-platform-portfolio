@@ -55,7 +55,7 @@ class PaperData(BaseModel):
 
 class ScrapeRequest(BaseModel):
     """Request model for scraping"""
-    source: Literal["arxiv", "huggingface", "paperswithcode", "all"] = "arxiv"
+    source: Literal["arxiv", "huggingface", "paperswithcode", "blogs", "all"] = "arxiv"
     days: int = Field(default=7, ge=1, le=365, description="Look back N days")
     max_results: int = Field(default=50, ge=1, le=500)
     category: Optional[CategoryType] = None

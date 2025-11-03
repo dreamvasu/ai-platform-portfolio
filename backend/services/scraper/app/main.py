@@ -22,6 +22,7 @@ from app.models import (
     JobStatus
 )
 from app.scrapers.arxiv import ArxivScraper
+from app.scrapers.blog_scraper import scrape_all_blogs, scrape_specific_blog
 
 # Configure logging
 logging.basicConfig(
@@ -211,7 +212,49 @@ async def run_scrape_job(job_id: str, request: ScrapeRequest):
         papers: List[PaperData] = []
 
         # Scrape based on source
-        if request.source in ["arxiv", "all"]:
+        if request.source == "blogs":
+            # Scrape AI company blogs
+            blog_posts = await scrape_all_blogs(max_per_source=request.max_results or 10)
+            # Convert blog posts to PaperData format
+            for idx, post in enumerate(blog_posts):
+                # Map blog categories to PaperData categories
+                category_map = {
+                    'model-release': 'llm',
+                    'research': 'nlp',
+                    'products': 'mlops',
+                    'models': 'multimodal'
+                }
+                category = category_map.get(post['category'], 'llm')
+
+                # Generate source_id from URL
+                source_id = f"{post['source']}-{hash(post['url']) % 1000000}"
+
+                # Map source to SourceType
+                source_type_map = {
+                    'openai': 'arxiv',  # Using arxiv as fallback since blogs not in enum
+                    'google-ai': 'arxiv',
+                    'microsoft-ai': 'arxiv',
+                    'huggingface': 'huggingface'
+                }
+                source_type = source_type_map.get(post['source'], 'arxiv')
+
+                papers.append(PaperData(
+                    title=post['title'],
+                    abstract=post['abstract'],
+                    authors=post['authors'],
+                    source=source_type,
+                    source_id=source_id,
+                    url=post['url'],
+                    pdf_url=None,
+                    published_date=datetime.fromisoformat(post['published_date']).date(),
+                    category=category,
+                    relevance_score=post['relevance_score'],
+                    tags=post['tags'],
+                    citation_count=0
+                ))
+            logger.info(f"Blog scraper found {len(blog_posts)} posts")
+
+        elif request.source in ["arxiv", "all"]:
             scraper = ArxivScraper(settings.arxiv_base_url)
             arxiv_papers = await scraper.scrape(
                 days=request.days,
@@ -220,12 +263,6 @@ async def run_scrape_job(job_id: str, request: ScrapeRequest):
             )
             papers.extend(arxiv_papers)
             logger.info(f"arXiv scraper found {len(arxiv_papers)} papers")
-
-        # TODO: Add other scrapers here
-        # if request.source in ["huggingface", "all"]:
-        #     hf_scraper = HuggingFaceScraper()
-        #     hf_papers = await hf_scraper.scrape(...)
-        #     papers.extend(hf_papers)
 
         # Store papers (in-memory for now)
         papers_db.extend(papers)
