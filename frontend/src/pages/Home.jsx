@@ -229,15 +229,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-
-          <div className="mt-12 text-center">
-            <a
-              href="/papers"
-              className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition shadow-lg hover:shadow-xl"
-            >
-              Explore Scraped Papers →
-            </a>
-          </div>
         </div>
       </section>
 

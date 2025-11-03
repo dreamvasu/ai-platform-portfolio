@@ -19,9 +19,6 @@ export default function Navbar() {
               <Link to="/journey" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700">
                 Journey
               </Link>
-              <Link to="/papers" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700">
-                Papers
-              </Link>
               <Link to="/kubernetes" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700">
                 Kubernetes
               </Link>
