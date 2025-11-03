@@ -89,7 +89,7 @@ export default function HADR() {
             <h1 className="text-5xl font-bold">High Availability & Disaster Recovery</h1>
           </div>
           <p className="text-xl text-blue-100 max-w-3xl">
-            Production-grade HA/DR architecture ensuring 99.9%+ uptime, <15min RTO, and <5min RPO
+            Production-grade HA/DR architecture ensuring 99.9%+ uptime, &lt;15min RTO, and &lt;5min RPO
             for mission-critical AI/ML platform services.
           </p>
 
@@ -415,13 +415,13 @@ export default function HADR() {
 
                 <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6">
                   <h3 className="font-bold text-lg mb-2 text-blue-800">Response Time SLA</h3>
-                  <div className="text-4xl font-bold text-blue-600 mb-2">p95 < 500ms</div>
+                  <div className="text-4xl font-bold text-blue-600 mb-2">p95 &lt; 500ms</div>
                   <p className="text-sm text-gray-700">95% of requests under 500ms</p>
                 </div>
 
                 <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-6">
                   <h3 className="font-bold text-lg mb-2 text-purple-800">Error Rate SLA</h3>
-                  <div className="text-4xl font-bold text-purple-600 mb-2">< 0.1%</div>
+                  <div className="text-4xl font-bold text-purple-600 mb-2">&lt; 0.1%</div>
                   <p className="text-sm text-gray-700">99.9% success rate minimum</p>
                 </div>
               </div>
