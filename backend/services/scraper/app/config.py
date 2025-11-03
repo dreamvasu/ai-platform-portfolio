@@ -3,6 +3,7 @@ Configuration management for Paper Scraper Service
 """
 
 from pydantic_settings import BaseSettings
+from pydantic import Field
 from typing import Optional
 
 
@@ -16,7 +17,10 @@ class Settings(BaseSettings):
     port: int = 8001
 
     # Django Backend
-    django_api_url: str = "http://localhost:8000"
+    django_api_url: str = Field(
+        default="http://localhost:8000",
+        description="Django API base URL"
+    )
     django_api_key: Optional[str] = None
     webhook_secret: str = "dev-secret-change-in-production"  # Must match Django WEBHOOK_SECRET
 
