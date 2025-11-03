@@ -161,6 +161,7 @@ async def send_webhook_to_django(job_id: str, source: str, papers: List[PaperDat
                     "title": paper.title,
                     "abstract": paper.abstract,
                     "authors": paper.authors,
+                    "source_id": paper.source_id,
                     "url": str(paper.url),  # Convert HttpUrl to string
                     "pdf_url": str(paper.pdf_url) if paper.pdf_url else None,
                     "published_date": paper.published_date.isoformat() if paper.published_date else None,

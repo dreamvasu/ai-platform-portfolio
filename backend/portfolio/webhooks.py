@@ -111,8 +111,10 @@ def scraper_complete_webhook(request):
             paper_url = paper_data.get('url', '')
 
             if paper_url:
-                # Extract source_id from URL (e.g., arxiv ID from arxiv.org/abs/2025.00001)
-                source_id = paper_url.split('/')[-1] if '/' in paper_url else paper_url
+                # Use source_id from scraper if provided, otherwise extract from URL
+                source_id = paper_data.get('source_id')
+                if not source_id:
+                    source_id = paper_url.split('/')[-1] if '/' in paper_url else paper_url
 
                 # Convert authors list to comma-separated string
                 authors = paper_data.get('authors', [])
