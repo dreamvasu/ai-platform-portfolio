@@ -246,6 +246,10 @@ class PaperViewSet(viewsets.ReadOnlyModelViewSet):
     - source: arxiv, huggingface, paperswithcode, scholar
     - featured: true/false
     - search: search in title and abstract
+
+    Supports lookup by:
+    - id: /papers/47/
+    - slug (source_id): /papers/kubernetes-aks-production-deployment/
     """
     queryset = Paper.objects.all()
     pagination_class = PaperPagination
@@ -253,6 +257,8 @@ class PaperViewSet(viewsets.ReadOnlyModelViewSet):
     search_fields = ['title', 'abstract', 'authors', 'tags']
     ordering_fields = ['published_date', 'relevance_score', 'citation_count', 'created_at']
     ordering = ['-published_date', '-relevance_score']
+    lookup_field = 'source_id'
+    lookup_value_regex = '[^/]+'  # Allow any characters except slash
 
     def get_serializer_class(self):
         if self.action == 'list':
