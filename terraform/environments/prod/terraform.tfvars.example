@@ -1,0 +1,41 @@
+# Production Environment Configuration
+# Copy this file to terraform.tfvars and fill in your values
+
+location    = "eastus"
+owner       = "vasu-kapoor"
+cost_center = "learning-sprint"
+
+# Networking
+vnet_address_space            = ["10.0.0.0/16"]
+aks_subnet_address_prefix     = ["10.0.1.0/24"]
+postgres_subnet_address_prefix = ["10.0.2.0/24"]
+
+# ACR
+acr_sku = "Standard"
+
+# Storage
+storage_replication_type = "LRS"
+media_storage_quota_gb   = 50
+static_storage_quota_gb  = 10
+
+# AKS Cluster
+kubernetes_version = "1.28"
+
+# System Node Pool
+aks_system_node_count = 1
+aks_system_vm_size    = "Standard_D2s_v3"
+aks_system_min_count  = 1
+aks_system_max_count  = 3
+
+# User Node Pool
+aks_user_vm_size   = "Standard_D4s_v3"
+aks_user_min_count = 2
+aks_user_max_count = 6
+
+# Azure AD Admin Groups (optional - add your Azure AD group object IDs)
+# aks_admin_group_object_ids = ["00000000-0000-0000-0000-000000000000"]
+
+# Database Credentials (REQUIRED - set these securely)
+postgres_user     = "ringlet"
+postgres_password = "CHANGE_ME_SECURE_PASSWORD"  # Generate a strong password
+postgres_db       = "ringlet_prod"
