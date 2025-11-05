@@ -4,12 +4,17 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django.core.management import call_command
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
 from .models import TechStack, JourneyEntry, Project, Paper, ScraperJob
 from .serializers import (
     TechStackSerializer, JourneyEntrySerializer, ProjectSerializer,
     PaperSerializer, PaperListSerializer, ScraperJobSerializer
 )
+import base64
+import os
+from google.cloud import vision
+from vertexai.generative_models import GenerativeModel
+import vertexai
 
 
 class TechStackViewSet(viewsets.ReadOnlyModelViewSet):
@@ -82,6 +87,148 @@ def populate_blogs(request):
         })
     except Exception as e:
         return Response({'status': 'error', 'message': str(e)}, status=500)
+
+
+@api_view(['POST'])
+def upload_tech_sop(request):
+    """
+    Upload an image containing Tech SOP, extract text with OCR,
+    generate blog post with AI, and save to database
+    """
+    try:
+        # Check if image was uploaded
+        if 'image' not in request.FILES:
+            return Response({
+                'status': 'error',
+                'message': 'No image file provided'
+            }, status=400)
+
+        image_file = request.FILES['image']
+
+        # Read image content
+        image_content = image_file.read()
+
+        # Step 1: Extract text from image using Google Cloud Vision
+        print("🔍 Extracting text from image...")
+        vision_client = vision.ImageAnnotatorClient()
+        image = vision.Image(content=image_content)
+        response = vision_client.text_detection(image=image)
+        texts = response.text_annotations
+
+        if not texts:
+            return Response({
+                'status': 'error',
+                'message': 'No text found in image'
+            }, status=400)
+
+        extracted_text = texts[0].description
+        print(f"✓ Extracted {len(extracted_text)} characters")
+
+        # Step 2: Generate blog post using Vertex AI Gemini
+        print("🤖 Generating blog post from extracted text...")
+        project_id = os.getenv('GOOGLE_CLOUD_PROJECT')
+        vertexai.init(project=project_id, location="us-central1")
+
+        model = GenerativeModel("gemini-pro")
+
+        prompt = f"""You are a technical writer. Based on the following extracted text from a Tech SOP (Standard Operating Procedure) image, create a comprehensive technical blog post.
+
+The extracted text is:
+---
+{extracted_text}
+---
+
+Please create a blog post with the following format:
+
+1. **Title**: A clear, concise title (50-80 characters)
+2. **Content**: A well-structured blog post (1500-2500 words) that includes:
+   - **Introduction**: Explain what this SOP covers
+   - **Key Steps**: Break down the procedure into clear sections
+   - **Code Examples**: If applicable, include any commands or code snippets
+   - **Best Practices**: Highlight important tips and recommendations
+   - **Common Pitfalls**: What to avoid
+   - **Conclusion**: Summary of key takeaways
+
+Use markdown formatting with headers, bullet points, code blocks, and emphasis where appropriate.
+Write in first-person ("I implemented this...") as if sharing personal experience.
+
+Return ONLY a JSON object with this structure:
+{{
+  "title": "Your title here",
+  "content": "Your full blog post content in markdown format here",
+  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
+}}
+
+Do not include any explanation outside the JSON."""
+
+        generation_response = model.generate_content(prompt)
+        blog_content = generation_response.text
+
+        # Parse JSON response
+        import json
+        # Clean the response (remove markdown code blocks if present)
+        blog_content = blog_content.strip()
+        if blog_content.startswith('```json'):
+            blog_content = blog_content[7:]
+        if blog_content.startswith('```'):
+            blog_content = blog_content[3:]
+        if blog_content.endswith('```'):
+            blog_content = blog_content[:-3]
+        blog_content = blog_content.strip()
+
+        blog_data = json.loads(blog_content)
+
+        # Step 3: Save image to Cloud Storage (optional - for now we'll skip and use base64)
+        # In production, you'd save to Cloud Storage and get a public URL
+        # For now, we'll just note the image was processed
+
+        # Step 4: Create blog post in database
+        print("💾 Saving blog post to database...")
+
+        # Generate slug from title
+        slug = blog_data['title'].lower().replace(' ', '-').replace(':', '').replace('&', 'and')
+        slug = ''.join(c for c in slug if c.isalnum() or c == '-')[:100]
+
+        # Create blog post
+        blog_post = Paper.objects.create(
+            title=blog_data['title'],
+            abstract=blog_data['content'],
+            authors='Vasu Kapoor',
+            source='blog',
+            source_id=f"tech-sop-{slug}",
+            url=None,
+            published_date=datetime.now().date(),
+            category='mlops',
+            tags=blog_data.get('tags', []),
+            citation_count=0,
+            relevance_score=0.90,
+            is_featured=False
+        )
+
+        print(f"✅ Blog post created: {blog_post.title}")
+
+        return Response({
+            'status': 'success',
+            'message': 'Tech SOP processed and blog post created successfully',
+            'blog_post': {
+                'id': blog_post.id,
+                'title': blog_post.title,
+                'slug': blog_post.source_id,
+                'url': f'/blog/{blog_post.id}',
+                'extracted_text_length': len(extracted_text),
+                'blog_content_length': len(blog_data['content']),
+                'tags': blog_data.get('tags', [])
+            }
+        })
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({
+            'status': 'error',
+            'message': str(e),
+            'traceback': traceback.format_exc()
+        }, status=500)
 
 
 class PaperPagination(PageNumberPagination):
