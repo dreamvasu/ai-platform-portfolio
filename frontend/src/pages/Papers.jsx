@@ -179,7 +179,7 @@ export default function Papers() {
 
                 <div className="flex gap-4 pt-4 border-t border-gray-100">
                   <Link
-                    to={`/blog/${paper.id}`}
+                    to={`/blog/${paper.source_id}`}
                     className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium transition-colors"
                   >
                     <ArrowRight className="w-4 h-4" />

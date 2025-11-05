@@ -6,7 +6,7 @@ import SEO from '../components/SEO';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
 export default function BlogDetail() {
-  const { id } = useParams();
+  const { slug } = useParams();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -16,7 +16,7 @@ export default function BlogDetail() {
     const fetchPost = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${API_BASE_URL}/papers/${id}/`);
+        const response = await axios.get(`${API_BASE_URL}/papers/${slug}/`);
         setPost(response.data);
 
         // Fetch related posts from same category
@@ -24,7 +24,7 @@ export default function BlogDetail() {
           const relatedResponse = await axios.get(
             `${API_BASE_URL}/papers/?category=${response.data.category}&page_size=4`
           );
-          const filtered = relatedResponse.data.results.filter(p => p.id !== parseInt(id));
+          const filtered = relatedResponse.data.results.filter(p => p.source_id !== slug);
           setRelatedPosts(filtered.slice(0, 3));
         }
       } catch (err) {
@@ -35,7 +35,7 @@ export default function BlogDetail() {
     };
 
     fetchPost();
-  }, [id]);
+  }, [slug]);
 
   if (loading) {
     return (
@@ -202,7 +202,7 @@ export default function BlogDetail() {
                 {relatedPosts.map((relatedPost) => (
                   <Link
                     key={relatedPost.id}
-                    to={`/blog/${relatedPost.id}`}
+                    to={`/blog/${relatedPost.source_id}`}
                     className="group bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all"
                   >
                     <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">

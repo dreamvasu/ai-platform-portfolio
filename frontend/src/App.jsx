@@ -23,7 +23,7 @@ function App() {
             <Route index element={<Home />} />
             <Route path="tech-sops" element={<TechSOPs />} />
             <Route path="papers" element={<Papers />} />
-            <Route path="blog/:id" element={<BlogDetail />} />
+            <Route path="blog/:slug" element={<BlogDetail />} />
             <Route path="kubernetes" element={<Kubernetes />} />
             <Route path="gcp" element={<GCP />} />
             <Route path="rag" element={<RAG />} />
