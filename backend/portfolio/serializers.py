@@ -52,7 +52,7 @@ class PaperListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Paper
         fields = [
-            'id', 'title', 'abstract', 'authors', 'source', 'source_display',
+            'id', 'title', 'abstract', 'authors', 'source', 'source_display', 'source_id',
             'url', 'pdf_url', 'published_date', 'category', 'category_display',
             'citation_count', 'relevance_score', 'is_featured', 'tags'
         ]
