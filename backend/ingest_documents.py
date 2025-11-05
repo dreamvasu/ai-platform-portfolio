@@ -12,6 +12,43 @@ django.setup()
 from rag_service.vector_store import VectorStore
 from rag_service.embeddings import EmbeddingGenerator
 from rag_service.document_processor import DocumentProcessor
+from portfolio.models import Paper
+
+def fetch_blog_posts_as_documents():
+    """Fetch blog posts from database and convert to document format"""
+    documents = []
+
+    try:
+        blog_posts = Paper.objects.all()
+        print(f"  📝 Found {blog_posts.count()} blog posts in database")
+
+        for post in blog_posts:
+            # Format blog post as markdown document
+            doc_content = f"""# {post.title}
+
+**Author:** {post.authors}
+**Published:** {post.published_date}
+**Category:** {post.get_category_display()}
+**Tags:** {', '.join(post.tags)}
+
+## Content
+
+{post.abstract}
+
+**Source:** Blog post from portfolio
+**URL:** /blog/{post.id}
+"""
+            documents.append({
+                'content': doc_content,
+                'source': f'blog-{post.source_id}',
+                'category': 'blog-post',
+                'title': post.title
+            })
+            print(f"    ✓ Loaded blog post: {post.title[:60]}...")
+    except Exception as e:
+        print(f"  ⚠️  Error fetching blog posts: {e}")
+
+    return documents
 
 def main():
     print("=" * 60)
@@ -57,6 +94,11 @@ def main():
         else:
             print(f"  ⚠️  Directory not found: {directory}")
 
+    # Load blog posts from database
+    print("\n📰 Loading blog posts from database...")
+    blog_docs = fetch_blog_posts_as_documents()
+    all_documents.extend(blog_docs)
+
     if not all_documents:
         print("\n❌ No documents found to ingest!")
         return
@@ -83,13 +125,21 @@ def main():
     print("🎉 DOCUMENT INGESTION COMPLETE!")
     print("=" * 60)
     print(f"\n📊 Summary:")
-    print(f"   - Source documents: {len(all_documents)}")
+    print(f"   - Markdown documents: {len([d for d in all_documents if 'blog-post' not in d.get('category', '')])}")
+    print(f"   - Blog posts: {len([d for d in all_documents if d.get('category') == 'blog-post'])}")
+    print(f"   - Total source documents: {len(all_documents)}")
     print(f"   - Text chunks: {len(chunks)}")
     print(f"   - Vector store size: {vector_store.count()} documents")
     print(f"\n✅ RAG system is ready to answer questions!")
+    print(f"   The chatbot can now reference:")
+    print(f"   - Portfolio documentation")
+    print(f"   - Technical blog posts")
+    print(f"   - Case studies")
     print("\nNext steps:")
     print("  1. Run Django server: python manage.py runserver")
     print("  2. Test chatbot at: http://127.0.0.1:8000/api/chatbot/")
+    print("  3. Ask about blog posts: 'Tell me about Kubernetes deployment'")
+
 
 if __name__ == "__main__":
     main()
