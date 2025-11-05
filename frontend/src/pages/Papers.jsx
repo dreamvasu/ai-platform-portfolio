@@ -13,7 +13,11 @@ export default function Papers() {
   useEffect(() => {
     const fetchPapers = async () => {
       try {
-        const data = await getPapers({ ordering: `-${sortBy}` });
+        // Fetch only blog posts (both 'blog' and 'blogs' sources)
+        const data = await getPapers({
+          ordering: `-${sortBy}`,
+          source__in: 'blog,blogs'
+        });
         setPapers(data.results || []);
       } catch (error) {
         console.error('Error fetching papers:', error);
@@ -51,9 +55,9 @@ export default function Papers() {
         {/* Hero Section */}
         <section className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-5xl font-bold mb-4">AI Industry Updates</h1>
+          <h1 className="text-5xl font-bold mb-4">Technical Blog & AI Industry Updates</h1>
           <p className="text-xl text-gray-300 max-w-3xl">
-            Latest model releases, research breakthroughs, and AI company announcements from OpenAI, Google AI, Microsoft, HuggingFace, and more. Automatically scraped and curated to keep you ahead of industry trends.
+            Deep-dive technical articles on Kubernetes, Terraform, RAG systems, and production deployments. Plus latest AI model releases and company announcements from OpenAI, Google AI, Microsoft, and HuggingFace.
           </p>
           <div className="mt-8 flex items-center gap-4">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg px-6 py-3">
