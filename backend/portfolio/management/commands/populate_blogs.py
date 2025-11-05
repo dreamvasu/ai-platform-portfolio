@@ -882,6 +882,679 @@ The 60% size reduction dramatically improved deployment speed and reduced costs.
                 'relevance_score': 0.85,
                 'is_featured': False
             },
+            {
+                'title': 'Building CI/CD Pipelines with GitHub Actions: From Commit to Production',
+                'abstract': '''Continuous Integration and Continuous Deployment (CI/CD) transformed my development workflow. GitHub Actions made it possible to automate testing, building, and deploying with every commit. Here's how I built a production-grade pipeline.
+
+**The Manual Process Pain**
+
+Before CI/CD, deployments required 15+ manual steps: run tests locally, build Docker image, push to registry, SSH into server, pull image, restart containers, verify deployment, rollback if broken. This took 30-45 minutes and was error-prone.
+
+**GitHub Actions Workflow**
+
+My pipeline runs on every push to main and pull requests:
+
+```yaml
+name: Deploy to Production
+on:
+  push:
+    branches: [main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run tests
+        run: |
+          python -m pytest tests/
+          npm run test
+
+  build-and-deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build Docker image
+        run: docker build -t app:${{ github.sha }} .
+      - name: Deploy to Cloud Run
+        run: gcloud run deploy app --image app:${{ github.sha }}
+```
+
+**Testing Strategy**
+
+Multiple test layers catch issues early:
+- Unit tests (pytest for Python, Jest for JavaScript)
+- Integration tests (API endpoints with test database)
+- End-to-end tests (Playwright for critical user flows)
+- Security scanning (Snyk for dependencies, Trivy for containers)
+
+Tests run in parallel, completing in ~3 minutes.
+
+**Deployment Stages**
+
+The pipeline has three environments:
+1. **PR Preview**: Every PR gets a temporary deployment for testing
+2. **Staging**: Merges to develop branch deploy here
+3. **Production**: Merges to main deploy with approval gate
+
+**Secrets Management**
+
+Never commit secrets. GitHub Actions secrets store:
+- Cloud provider credentials
+- Database passwords
+- API keys
+- SSL certificates
+
+Access them in workflows: `${{ secrets.GCP_KEY }}`
+
+**Rollback Strategy**
+
+If deployment fails health checks, automatic rollback:
+
+```yaml
+- name: Health check
+  run: |
+    for i in {1..30}; do
+      if curl -f $DEPLOY_URL/health/; then exit 0; fi
+      sleep 2
+    done
+    echo "Health check failed"
+    gcloud run services update-traffic app --to-revisions=PREVIOUS=100
+    exit 1
+```
+
+**Build Optimization**
+
+Caching dramatically speeds up builds:
+- Docker layer caching (BuildKit)
+- npm/pip dependency caching
+- Test result caching (skip unchanged tests)
+
+Build time reduced from 8 minutes to 2 minutes.
+
+**Results**
+
+After implementing CI/CD:
+- Deployment time: 45 minutes → 5 minutes (89% reduction)
+- Deployment frequency: Once per week → 10+ per day
+- Failed deployments: Caught before production
+- Developer confidence: Significantly higher
+
+CI/CD pipelines are infrastructure. Invest time upfront for massive productivity gains.''',
+                'authors': 'Vasu Kapoor',
+                'source': 'blog',
+                'source_id': 'cicd-github-actions',
+                'url': None,
+                'published_date': (datetime.now() - timedelta(days=18)).date(),
+                'category': 'mlops',
+                'tags': ['CI/CD', 'GitHub Actions', 'DevOps', 'Automation', 'Testing'],
+                'citation_count': 0,
+                'relevance_score': 0.88,
+                'is_featured': False
+            },
+            {
+                'title': 'Production Monitoring with Prometheus and Grafana',
+                'abstract': '''You can't fix what you can't see. Prometheus and Grafana transformed my ability to understand application behavior, diagnose issues, and prevent outages.
+
+**Why Prometheus?**
+
+Prometheus is a time-series database designed for metrics:
+- Pull-based model (Prometheus scrapes targets)
+- Powerful query language (PromQL)
+- Built-in alerting
+- Kubernetes-native
+
+**Metrics Architecture**
+
+I instrument applications with three metric types:
+
+1. **Counters**: Monotonically increasing values (requests served, errors occurred)
+2. **Gauges**: Point-in-time values (active connections, memory usage)
+3. **Histograms**: Distributions (request latency percentiles)
+
+**Django Application Instrumentation**
+
+Using prometheus_client library:
+
+```python
+from prometheus_client import Counter, Histogram
+
+request_count = Counter('http_requests_total', 'Total HTTP requests', ['method', 'endpoint', 'status'])
+request_duration = Histogram('http_request_duration_seconds', 'HTTP request duration')
+
+@request_duration.time()
+def api_endpoint(request):
+    request_count.labels(method=request.method, endpoint='/api/', status=200).inc()
+    return JsonResponse({'status': 'ok'})
+```
+
+**Key Metrics Tracked**
+
+Application metrics:
+- Request rate (requests/second)
+- Error rate (errors/total requests)
+- Request duration (p50, p95, p99)
+- Active database connections
+- Cache hit rate
+- Background job queue depth
+
+Infrastructure metrics:
+- CPU utilization
+- Memory usage
+- Disk I/O
+- Network bandwidth
+
+**Grafana Dashboards**
+
+I created dashboards for different audiences:
+
+Executive dashboard:
+- Uptime percentage
+- Request volume trends
+- Error rate trends
+- Cost per request
+
+Engineering dashboard:
+- Response time percentiles
+- Database query performance
+- Cache effectiveness
+- Service dependencies health
+
+**Alerting Rules**
+
+Alerts fire on actionable conditions:
+
+```yaml
+groups:
+- name: application
+  rules:
+  - alert: HighErrorRate
+    expr: rate(http_requests_total{status="500"}[5m]) > 0.05
+    for: 2m
+    annotations:
+      summary: "Error rate above 5%"
+
+  - alert: SlowResponses
+    expr: histogram_quantile(0.95, http_request_duration_seconds) > 1
+    for: 5m
+    annotations:
+      summary: "95th percentile latency above 1s"
+```
+
+Alerts go to PagerDuty for on-call escalation.
+
+**Query Optimization**
+
+PromQL queries power dashboards:
+
+```promql
+# Request rate by endpoint
+rate(http_requests_total[5m])
+
+# Error percentage
+(rate(http_requests_total{status="500"}[5m]) / rate(http_requests_total[5m])) * 100
+
+# 95th percentile latency
+histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+```
+
+**Results**
+
+Before Prometheus/Grafana:
+- Detected outages via user complaints
+- No visibility into performance degradation
+- Guessed at capacity planning
+
+After:
+- Mean time to detection (MTTD): <2 minutes
+- Proactive issue resolution
+- Data-driven capacity decisions
+- 99.9% uptime achieved
+
+Monitoring is not optional. It's the foundation of reliability.''',
+                'authors': 'Vasu Kapoor',
+                'source': 'blog',
+                'source_id': 'prometheus-grafana-monitoring',
+                'url': None,
+                'published_date': (datetime.now() - timedelta(days=20)).date(),
+                'category': 'mlops',
+                'tags': ['Monitoring', 'Prometheus', 'Grafana', 'Observability', 'SRE'],
+                'citation_count': 0,
+                'relevance_score': 0.86,
+                'is_featured': False
+            },
+            {
+                'title': 'Database Connection Pooling: Solving the N+1 Connection Problem',
+                'abstract': '''Database connections are expensive. Opening a new connection for every request kills performance. Connection pooling solved this for my Django applications.
+
+**The Problem**
+
+Without pooling, each request:
+1. Opens TCP connection to database
+2. Authenticates
+3. Executes query
+4. Closes connection
+
+For 100 concurrent requests, that's 100 connection overhead cycles. Database refused connections when limit (100) was reached.
+
+**Django's Default Behavior**
+
+Django opens a connection per request by default. With gunicorn running 4 workers, max 4 concurrent database connections. But during traffic spikes (500+ concurrent requests), this causes:
+- Connection timeout errors
+- Slow response times (waiting for available connection)
+- Database connection limit exhaustion
+
+**Solution: PgBouncer**
+
+PgBouncer is a connection pooler for PostgreSQL:
+- Applications connect to PgBouncer
+- PgBouncer maintains pool of database connections
+- Reuses connections across requests
+
+Installation:
+
+```bash
+sudo apt-get install pgbouncer
+```
+
+Configuration (/etc/pgbouncer/pgbouncer.ini):
+
+```ini
+[databases]
+mydb = host=localhost port=5432 dbname=production
+
+[pgbouncer]
+listen_addr = 127.0.0.1
+listen_port = 6432
+auth_type = md5
+pool_mode = transaction
+max_client_conn = 1000
+default_pool_size = 20
+reserve_pool_size = 5
+```
+
+**Pool Modes**
+
+Three modes available:
+
+1. **Session**: One pool connection = one client session. No transaction-level pooling.
+2. **Transaction** (recommended): Connection returned to pool after each transaction. Most efficient.
+3. **Statement**: Connection returned after each statement. Breaks multi-statement transactions.
+
+I use transaction mode for Django.
+
+**Django Configuration**
+
+Point Django to PgBouncer instead of direct database:
+
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'production',
+        'USER': 'django',
+        'PASSWORD': 'xxx',
+        'HOST': '127.0.0.1',
+        'PORT': '6432',  # PgBouncer port, not 5432
+        'CONN_MAX_AGE': 0,  # Disable Django's persistent connections
+    }
+}
+```
+
+**Monitoring Pool Health**
+
+PgBouncer admin console:
+
+```bash
+psql -p 6432 -U pgbouncer pgbouncer
+SHOW POOLS;
+SHOW CLIENTS;
+SHOW SERVERS;
+```
+
+Watch for:
+- `cl_waiting`: Clients waiting for connection (should be 0)
+- `sv_idle`: Idle server connections (should be >0)
+- `sv_active`: Active queries
+
+**Results**
+
+Before PgBouncer:
+- Max concurrent requests: ~20 before connection errors
+- Connection errors during traffic spikes: 5-10%
+- Database connection limit hit frequently
+
+After PgBouncer:
+- Max concurrent requests: 500+ without errors
+- Connection errors: <0.01%
+- Database connections: Stable at 20, never hits limit
+
+**Configuration Tuning**
+
+Start with:
+- `default_pool_size = num_cpu_cores * 2`
+- `max_client_conn = max_concurrent_requests * 2`
+
+Monitor and adjust based on `cl_waiting` and `sv_idle` metrics.
+
+Connection pooling is essential for production Django. Don't skip it.''',
+                'authors': 'Vasu Kapoor',
+                'source': 'blog',
+                'source_id': 'database-connection-pooling',
+                'url': None,
+                'published_date': (datetime.now() - timedelta(days=22)).date(),
+                'category': 'mlops',
+                'tags': ['Database', 'PostgreSQL', 'Performance', 'PgBouncer', 'Django'],
+                'citation_count': 0,
+                'relevance_score': 0.84,
+                'is_featured': False
+            },
+            {
+                'title': 'API Rate Limiting: Protecting Your Service from Abuse',
+                'abstract': '''Without rate limiting, a single user can overwhelm your API. I implemented rate limiting to protect services from abuse, accidental DoS, and ensure fair resource distribution.
+
+**The Incident**
+
+A client script had an infinite loop making API requests. Within 5 minutes, it sent 50,000 requests, causing:
+- Database CPU at 100%
+- Response times degraded for all users
+- $200 in unexpected cloud costs
+
+Rate limiting would have prevented this.
+
+**Rate Limiting Strategies**
+
+Four common strategies:
+
+1. **Fixed Window**: Allow N requests per time window (e.g., 100/hour)
+   - Simple but has burst problem at window boundaries
+
+2. **Sliding Window**: Count requests in rolling time window
+   - Smoother than fixed window
+
+3. **Token Bucket**: Bucket fills with tokens at constant rate, each request consumes token
+   - Allows bursts up to bucket size
+
+4. **Leaky Bucket**: Requests enter queue, processed at constant rate
+   - Smoothest traffic shaping
+
+I use sliding window for simplicity and effectiveness.
+
+**Django Implementation**
+
+Using django-ratelimit:
+
+```python
+from django_ratelimit.decorators import ratelimit
+
+@ratelimit(key='user', rate='100/h', method='POST')
+@ratelimit(key='ip', rate='1000/d')
+def api_endpoint(request):
+    # Rate limits:
+    # - 100 requests per hour per authenticated user
+    # - 1000 requests per day per IP address
+    return JsonResponse({'data': '...'})
+```
+
+**Redis-Based Rate Limiting**
+
+For distributed systems, store rate limit counters in Redis:
+
+```python
+import redis
+from datetime import timedelta
+
+def check_rate_limit(user_id, limit=100, window=3600):
+    r = redis.Redis()
+    key = f"rate_limit:{user_id}"
+
+    current = r.get(key)
+    if current and int(current) >= limit:
+        return False  # Rate limit exceeded
+
+    pipeline = r.pipeline()
+    pipeline.incr(key)
+    pipeline.expire(key, window)
+    pipeline.execute()
+
+    return True  # Request allowed
+```
+
+**Rate Limit Tiers**
+
+Different limits for different users:
+
+- Anonymous: 100 requests/day
+- Authenticated: 1,000 requests/day
+- Paid tier: 10,000 requests/day
+- Enterprise: Custom limits
+
+**Response Headers**
+
+Inform clients of limits:
+
+```python
+response['X-RateLimit-Limit'] = '100'
+response['X-RateLimit-Remaining'] = '87'
+response['X-RateLimit-Reset'] = '1640995200'
+```
+
+Clients can implement exponential backoff when approaching limit.
+
+**HTTP 429 Response**
+
+When limit exceeded:
+
+```python
+if rate_limit_exceeded:
+    return JsonResponse({
+        'error': 'Rate limit exceeded',
+        'retry_after': 3600
+    }, status=429)
+```
+
+**Bypass for Critical Operations**
+
+Health checks and monitoring shouldn't be rate limited:
+
+```python
+RATELIMIT_ENABLE = True
+RATELIMIT_VIEW = 'path.to.custom_handler'
+
+# In views.py
+@ratelimit(key='ip', rate='1000/h')
+@ratelimit_exempt('health_check')
+def api_endpoint(request):
+    pass
+```
+
+**Results**
+
+After implementing rate limiting:
+- Abuse incidents: Zero
+- Unexpected cost spikes: Prevented
+- Fair resource distribution: All users get fair access
+- API stability: Improved significantly
+
+Rate limiting is defensive programming. Implement it before you need it.''',
+                'authors': 'Vasu Kapoor',
+                'source': 'blog',
+                'source_id': 'api-rate-limiting',
+                'url': None,
+                'published_date': (datetime.now() - timedelta(days=25)).date(),
+                'category': 'mlops',
+                'tags': ['API', 'Rate Limiting', 'Security', 'Django', 'Redis'],
+                'citation_count': 0,
+                'relevance_score': 0.83,
+                'is_featured': False
+            },
+            {
+                'title': 'Redis Caching Strategies: From 8 Seconds to 200ms',
+                'abstract': '''Databases are slow. Repeatedly querying for the same data wastes resources and frustrates users. Redis caching transformed my application performance.
+
+**The Slow Dashboard**
+
+A dashboard page made 50+ database queries, taking 8.5 seconds to load. Users complained. The data rarely changed but was fetched from PostgreSQL every time.
+
+**Redis to the Rescue**
+
+Redis is an in-memory data store:
+- Sub-millisecond read latency
+- Supports multiple data structures (strings, lists, sets, hashes)
+- TTL (time-to-live) for automatic expiration
+- Atomic operations
+
+**Django Cache Configuration**
+
+```python
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'PARSER_CLASS': 'redis.connection.HiredisParser',
+            'POOL_CLASS': 'redis.BlockingConnectionPool',
+            'POOL_CLASS_KWARGS': {
+                'max_connections': 50,
+                'timeout': 20,
+            }
+        },
+        'KEY_PREFIX': 'myapp',
+        'TIMEOUT': 300,
+    }
+}
+```
+
+**View-Level Caching**
+
+Cache entire view responses:
+
+```python
+from django.views.decorators.cache import cache_page
+
+@cache_page(60 * 15)  # Cache for 15 minutes
+def dashboard(request):
+    expensive_data = run_expensive_queries()
+    return render(request, 'dashboard.html', {'data': expensive_data})
+```
+
+**Selective Caching**
+
+Cache specific querysets:
+
+```python
+from django.core.cache import cache
+
+def get_active_users():
+    users = cache.get('active_users')
+    if users is None:
+        users = User.objects.filter(is_active=True).select_related('profile')
+        cache.set('active_users', users, timeout=300)  # 5 minutes
+    return users
+```
+
+**Cache Invalidation**
+
+The hardest problem in computer science. I use two strategies:
+
+1. **TTL-based**: Set reasonable expiration times
+2. **Event-based**: Invalidate when data changes
+
+```python
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=User)
+def invalidate_user_cache(sender, instance, **kwargs):
+    cache_key = f"user:{instance.id}"
+    cache.delete(cache_key)
+    cache.delete('active_users')  # Invalidate aggregated cache too
+```
+
+**Cache Warming**
+
+Pre-populate cache before traffic arrives:
+
+```python
+def warm_cache():
+    # Run during deployment or on schedule
+    get_active_users()  # Triggers cache population
+    get_popular_posts()
+    get_category_counts()
+```
+
+**Cache Patterns**
+
+**1. Cache-Aside (Lazy Loading)**
+```python
+data = cache.get(key)
+if not data:
+    data = database.query()
+    cache.set(key, data)
+return data
+```
+
+**2. Write-Through**
+```python
+def update_user(user_id, data):
+    user = User.objects.get(id=user_id)
+    user.update(data)
+    cache.set(f"user:{user_id}", user)
+```
+
+**3. Write-Behind**
+```python
+# Write to cache immediately, database asynchronously
+cache.set(key, value)
+celery_task.delay('write_to_db', key, value)
+```
+
+**Monitoring Cache Hit Rate**
+
+```python
+from django.core.cache import cache
+
+def get_with_metrics(key):
+    value = cache.get(key)
+    if value:
+        metrics.incr('cache.hit')
+    else:
+        metrics.incr('cache.miss')
+    return value
+```
+
+Target: >80% hit rate for frequently accessed data.
+
+**Results**
+
+Dashboard performance:
+- Load time: 8.5s → 420ms (95% improvement)
+- Database queries: 50+ → 2 (96% reduction)
+- Database CPU: 85% → 35%
+- User satisfaction: Significantly improved
+
+Cache hit rate: 92% after tuning TTLs.
+
+**Lessons Learned**
+
+1. Start with conservative TTLs, increase gradually
+2. Monitor cache hit rates - low hit rate = wrong data cached
+3. Invalidate precisely - blanket invalidation defeats caching
+4. Cache expensive computations, not fast queries
+5. Set memory limits - prevent Redis from consuming all RAM
+
+Redis caching is low-hanging fruit for massive performance gains. Implement it early.''',
+                'authors': 'Vasu Kapoor',
+                'source': 'blog',
+                'source_id': 'redis-caching-strategies',
+                'url': None,
+                'published_date': (datetime.now() - timedelta(days=28)).date(),
+                'category': 'mlops',
+                'tags': ['Redis', 'Caching', 'Performance', 'Django', 'Optimization'],
+                'citation_count': 0,
+                'relevance_score': 0.89,
+                'is_featured': False
+            },
         ]
 
         created_count = 0
