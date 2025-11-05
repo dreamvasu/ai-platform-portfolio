@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     TechStackViewSet, JourneyEntryViewSet, ProjectViewSet,
-    PaperViewSet, ScraperJobViewSet, populate_database
+    PaperViewSet, ScraperJobViewSet, populate_database, populate_blogs
 )
 from .webhooks import (
     scraper_complete_webhook,
@@ -20,6 +20,7 @@ router.register(r'scraper-jobs', ScraperJobViewSet, basename='scraperjob')
 urlpatterns = [
     path('', include(router.urls)),
     path('admin/populate/', populate_database, name='populate_database'),
+    path('admin/populate-blogs/', populate_blogs, name='populate_blogs'),
 
     # Webhook endpoints for microservices
     path('webhooks/health/', webhook_health, name='webhook_health'),

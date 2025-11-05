@@ -69,6 +69,21 @@ def populate_database(request):
         return Response({'status': 'error', 'message': str(e)}, status=500)
 
 
+@api_view(['POST'])
+def populate_blogs(request):
+    """Admin endpoint to populate blog posts"""
+    try:
+        call_command('populate_blogs')
+        return Response({
+            'status': 'success',
+            'message': 'Blog posts populated successfully',
+            'total_papers': Paper.objects.count(),
+            'featured_papers': Paper.objects.filter(is_featured=True).count()
+        })
+    except Exception as e:
+        return Response({'status': 'error', 'message': str(e)}, status=500)
+
+
 class PaperPagination(PageNumberPagination):
     page_size = 20
     page_size_query_param = 'page_size'
