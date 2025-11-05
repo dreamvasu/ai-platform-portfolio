@@ -472,10 +472,10 @@ export default function HADR() {
                 <div className="border-l-4 border-yellow-500 bg-yellow-50 rounded-r-lg p-4">
                   <h3 className="font-bold text-yellow-800 mb-2">Warning Alerts (Email)</h3>
                   <ul className="text-sm text-gray-700 space-y-1">
-                    <li>• p95 latency > 800ms for 10 minutes</li>
-                    <li>• Error rate > 0.5% for 5 minutes</li>
-                    <li>• CPU usage > 80% for 15 minutes</li>
-                    <li>• Memory usage > 85%</li>
+                    <li>• p95 latency &gt; 800ms for 10 minutes</li>
+                    <li>• Error rate &gt; 0.5% for 5 minutes</li>
+                    <li>• CPU usage &gt; 80% for 15 minutes</li>
+                    <li>• Memory usage &gt; 85%</li>
                   </ul>
                 </div>
 
