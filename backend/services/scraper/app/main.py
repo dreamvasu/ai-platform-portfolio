@@ -223,7 +223,7 @@ async def send_blog_webhook_to_django(job_id: str, blog_posts: List[Dict]):
 
         payload = {
             "job_id": job_id,
-            "source": "blog",  # Use singular 'blog' to match Paper model
+            "source": "blog",  # Always use 'blog' (singular) for consistency
             "papers": papers_payload,
             "total_papers": len(papers_payload),
             "timestamp": datetime.now().isoformat()

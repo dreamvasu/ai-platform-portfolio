@@ -13,10 +13,10 @@ export default function Papers() {
   useEffect(() => {
     const fetchPapers = async () => {
       try {
-        // Fetch only blog posts (both 'blog' and 'blogs' sources)
+        // Fetch only blog posts (source='blog' only - manually created blogs)
         const data = await getPapers({
           ordering: `-${sortBy}`,
-          source__in: 'blog,blogs'
+          source: 'blog'
         });
         setPapers(data.results || []);
       } catch (error) {

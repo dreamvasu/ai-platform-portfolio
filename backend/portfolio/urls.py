@@ -9,7 +9,8 @@ from .webhooks import (
     scraper_complete_webhook,
     document_processed_webhook,
     webhook_health,
-    fix_blog_slugs_webhook
+    fix_blog_slugs_webhook,
+    normalize_blog_sources_webhook
 )
 
 router = DefaultRouter()
@@ -30,4 +31,5 @@ urlpatterns = [
     path('webhooks/scraper-complete/', scraper_complete_webhook, name='scraper_complete'),
     path('webhooks/document-processed/', document_processed_webhook, name='document_processed'),
     path('webhooks/fix-blog-slugs/', fix_blog_slugs_webhook, name='fix_blog_slugs'),
+    path('webhooks/normalize-blog-sources/', normalize_blog_sources_webhook, name='normalize_blog_sources'),
 ]

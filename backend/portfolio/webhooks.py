@@ -219,6 +219,30 @@ def document_processed_webhook(request):
         )
 
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@verify_webhook_signature
+def normalize_blog_sources_webhook(request):
+    """Normalize all 'blogs' source to 'blog' for consistency"""
+    try:
+        updated = Paper.objects.filter(source='blogs').update(source='blog')
+
+        logger.info(f"Normalized {updated} papers from source='blogs' to source='blog'")
+
+        return Response({
+            'status': 'success',
+            'updated': updated,
+            'total_blogs': Paper.objects.filter(source='blog').count()
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Error normalizing blog sources: {str(e)}")
+        return Response(
+            {'error': 'Failed to normalize blog sources', 'detail': str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def webhook_health(request):
@@ -230,7 +254,8 @@ def webhook_health(request):
         'endpoints': {
             'scraper_complete': '/api/webhooks/scraper-complete/',
             'document_processed': '/api/webhooks/document-processed/',
-            'fix_blog_slugs': '/api/webhooks/fix-blog-slugs/'
+            'fix_blog_slugs': '/api/webhooks/fix-blog-slugs/',
+            'normalize_blog_sources': '/api/webhooks/normalize-blog-sources/'
         }
     })
 
