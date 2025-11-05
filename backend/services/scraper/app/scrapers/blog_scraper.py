@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import List, Dict
 import re
 import logging
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -121,6 +122,47 @@ def parse_date(date_str: str) -> datetime:
     return datetime.now()
 
 
+def generate_slug_from_url(url: str, title: str) -> str:
+    """
+    Generate a clean slug from URL or title for blog posts.
+
+    Priority:
+    1. Extract meaningful slug from URL path
+    2. Fall back to slugified title
+
+    Examples:
+        https://openai.com/blog/gpt-4-turbo/ -> gpt-4-turbo
+        https://blog.google/technology/ai/gemini-pro-api/ -> gemini-pro-api
+    """
+    try:
+        parsed = urlparse(url)
+        path = parsed.path.rstrip('/')
+
+        # Split path and get last meaningful segment
+        parts = [p for p in path.split('/') if p]
+
+        if len(parts) > 0:
+            last_part = parts[-1]
+
+            # Check if it looks like a slug (not just numbers or very short)
+            if not last_part.isdigit() and len(last_part) >= 10:
+                # Clean it up
+                slug = re.sub(r'[^a-z0-9-]', '-', last_part.lower())
+                slug = re.sub(r'-+', '-', slug).strip('-')
+                return slug[:100]  # Limit length
+
+        # Fall back to title-based slug
+        slug = re.sub(r'[^a-z0-9\s-]', '', title.lower())
+        slug = re.sub(r'[\s-]+', '-', slug).strip('-')
+        return slug[:80]  # Shorter for title-based slugs
+
+    except Exception as e:
+        logger.error(f"Error generating slug from '{url}': {e}")
+        # Emergency fallback
+        slug = re.sub(r'[^a-z0-9\s-]', '', title[:50].lower())
+        return re.sub(r'[\s-]+', '-', slug).strip('-')
+
+
 async def scrape_rss_feed(source_key: str, source_config: Dict, max_results: int = 10) -> List[Dict]:
     """Scrape blog posts from RSS feed"""
     posts = []
@@ -162,10 +204,14 @@ async def scrape_rss_feed(source_key: str, source_config: Dict, max_results: int
                 elif hasattr(entry, 'authors') and entry.authors:
                     author = entry.authors[0].get('name', '')
 
+                # Generate slug for this blog post
+                slug = generate_slug_from_url(entry.link, entry.title)
+
                 # Build post
                 post = {
                     'title': entry.title,
                     'url': entry.link,
+                    'slug': slug,  # Add slug for URL routing
                     'published_date': pub_date.isoformat(),
                     'abstract': abstract or entry.title,  # Fallback to title
                     'authors': author or source_config['display_name'],
@@ -177,7 +223,7 @@ async def scrape_rss_feed(source_key: str, source_config: Dict, max_results: int
                 }
 
                 posts.append(post)
-                logger.debug(f"Extracted post: {post['title']}")
+                logger.debug(f"Extracted post: {post['title']} (slug: {slug})")
 
             except Exception as e:
                 logger.error(f"Failed to parse entry from {source_key}: {e}")

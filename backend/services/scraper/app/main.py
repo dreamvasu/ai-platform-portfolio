@@ -199,6 +199,57 @@ async def send_webhook_to_django(job_id: str, source: str, papers: List[PaperDat
         logger.error(f"Error sending webhook to Django: {str(e)}")
 
 
+async def send_blog_webhook_to_django(job_id: str, blog_posts: List[Dict]):
+    """Send blog posts to Django webhook"""
+    try:
+        webhook_url = f"{settings.django_api_url}/api/webhooks/scraper-complete/"
+
+        # Transform blog posts for Django
+        papers_payload = []
+        for post in blog_posts:
+            papers_payload.append({
+                "title": post['title'],
+                "abstract": post['abstract'],
+                "authors": post['authors'],
+                "source_id": post.get('slug', ''),  # Use slug as source_id
+                "url": post['url'],
+                "pdf_url": None,
+                "published_date": post['published_date'].split('T')[0],  # ISO date only
+                "category": post.get('category', 'mlops'),
+                "relevance_score": post.get('relevance_score', 0.85),
+                "tags": post.get('tags', []),
+                "citation_count": 0
+            })
+
+        payload = {
+            "job_id": job_id,
+            "source": "blog",  # Use singular 'blog' to match Paper model
+            "papers": papers_payload,
+            "total_papers": len(papers_payload),
+            "timestamp": datetime.now().isoformat()
+        }
+
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                webhook_url,
+                json=payload,
+                headers={
+                    "Authorization": f"Bearer {settings.webhook_secret}",
+                    "Content-Type": "application/json"
+                }
+            )
+
+            if response.status_code in [200, 201]:
+                logger.info(f"Blog webhook sent successfully: {job_id}")
+                result = response.json()
+                logger.info(f"Django response: {result.get('papers_created', 0)} created, {result.get('papers_updated', 0)} updated")
+            else:
+                logger.warning(f"Blog webhook failed with status {response.status_code}: {response.text}")
+
+    except Exception as e:
+        logger.error(f"Error sending blog webhook to Django: {str(e)}")
+
+
 async def run_scrape_job(job_id: str, request: ScrapeRequest):
     """
     Run scraping job in background
@@ -210,52 +261,27 @@ async def run_scrape_job(job_id: str, request: ScrapeRequest):
     try:
         logger.info(f"Starting scrape job {job_id}: source={request.source}")
 
-        papers: List[PaperData] = []
-
-        # Scrape based on source
-        if request.source == "blogs":
-            # Scrape AI company blogs
-            blog_posts = await scrape_all_blogs(max_per_source=request.max_results or 10)
-            # Convert blog posts to PaperData format
-            for idx, post in enumerate(blog_posts):
-                # Map blog categories to PaperData categories
-                category_map = {
-                    'model-release': 'llm',
-                    'research': 'nlp',
-                    'products': 'mlops',
-                    'models': 'multimodal'
-                }
-                category = category_map.get(post['category'], 'llm')
-
-                # Generate source_id from URL
-                source_id = f"{post['source']}-{hash(post['url']) % 1000000}"
-
-                # Map source to SourceType
-                source_type_map = {
-                    'openai': 'arxiv',  # Using arxiv as fallback since blogs not in enum
-                    'google-ai': 'arxiv',
-                    'microsoft-ai': 'arxiv',
-                    'huggingface': 'huggingface'
-                }
-                source_type = source_type_map.get(post['source'], 'arxiv')
-
-                papers.append(PaperData(
-                    title=post['title'],
-                    abstract=post['abstract'],
-                    authors=post['authors'],
-                    source=source_type,
-                    source_id=source_id,
-                    url=post['url'],
-                    pdf_url=None,
-                    published_date=datetime.fromisoformat(post['published_date']).date(),
-                    category=category,
-                    relevance_score=post['relevance_score'],
-                    tags=post['tags'],
-                    citation_count=0
-                ))
+        # Handle blog scraping separately
+        if request.source in ["blogs", "blog"]:
+            blog_posts = await scrape_all_blogs(max_per_source=request.max_results or 3)
             logger.info(f"Blog scraper found {len(blog_posts)} posts")
 
-        elif request.source in ["arxiv", "all"]:
+            # Send to Django webhook
+            await send_blog_webhook_to_django(job_id, blog_posts)
+
+            # Update job status
+            job = jobs_db[job_id]
+            job.status = JobStatus.COMPLETED
+            job.end_time = datetime.now()
+            job.papers_found = len(blog_posts)
+            job.papers_added = len(blog_posts)
+
+            logger.info(f"Blog scrape job {job_id} completed: {len(blog_posts)} posts sent to Django")
+            return
+
+        # Handle arXiv scraping
+        papers: List[PaperData] = []
+        if request.source in ["arxiv", "all"]:
             scraper = ArxivScraper(settings.arxiv_base_url)
             arxiv_papers = await scraper.scrape(
                 days=request.days,
@@ -282,6 +308,8 @@ async def run_scrape_job(job_id: str, request: ScrapeRequest):
 
     except Exception as e:
         logger.error(f"Scrape job {job_id} failed: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
         job = jobs_db.get(job_id)
         if job:
             job.status = JobStatus.FAILED

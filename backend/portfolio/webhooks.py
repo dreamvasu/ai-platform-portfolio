@@ -229,6 +229,95 @@ def webhook_health(request):
         'timestamp': timezone.now().isoformat(),
         'endpoints': {
             'scraper_complete': '/api/webhooks/scraper-complete/',
-            'document_processed': '/api/webhooks/document-processed/'
+            'document_processed': '/api/webhooks/document-processed/',
+            'fix_blog_slugs': '/api/webhooks/fix-blog-slugs/'
         }
     })
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@verify_webhook_signature
+def fix_blog_slugs_webhook(request):
+    """
+    Webhook endpoint to fix blog post slugs.
+
+    Expected payload:
+    {
+        "dry_run": false
+    }
+    """
+    try:
+        from django.utils.text import slugify
+
+        dry_run = request.data.get('dry_run', False)
+
+        logger.info(f"Starting blog slug fix (dry_run={dry_run})")
+
+        # Find blog posts without source_id
+        from django.db.models import Q
+        blogs_without_slug = Paper.objects.filter(
+            Q(source='blog') | Q(source='blogs')
+        ).filter(
+            Q(source_id__isnull=True) | Q(source_id='')
+        )
+
+        total = blogs_without_slug.count()
+        logger.info(f"Found {total} blog posts without slugs")
+
+        if total == 0:
+            return Response({
+                'status': 'success',
+                'message': 'All blog posts already have slugs',
+                'total': 0,
+                'updated': 0
+            })
+
+        updated = 0
+        results = []
+
+        for blog in blogs_without_slug:
+            # Generate slug from URL or title
+            if blog.url:
+                parts = blog.url.rstrip('/').split('/')
+                if len(parts) > 1 and parts[-1]:
+                    slug = slugify(parts[-1])
+                else:
+                    slug = slugify(blog.title[:80])
+            else:
+                slug = slugify(blog.title[:80])
+
+            # Ensure uniqueness
+            base_slug = slug
+            counter = 1
+            while Paper.objects.filter(source_id=slug).exclude(id=blog.id).exists():
+                slug = f'{base_slug}-{counter}'
+                counter += 1
+
+            if not dry_run:
+                blog.source_id = slug
+                blog.save()
+                updated += 1
+
+            results.append({
+                'id': blog.id,
+                'title': blog.title[:50],
+                'slug': slug
+            })
+
+        logger.info(f"Blog slug fix completed: {updated} updated (dry_run={dry_run})")
+
+        return Response({
+            'status': 'success',
+            'dry_run': dry_run,
+            'total': total,
+            'updated': updated,
+            'results': results[:10]  # Limit to first 10 for response size
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Error fixing blog slugs: {str(e)}")
+        return Response(
+            {'error': 'Failed to fix blog slugs', 'detail': str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
