@@ -79,7 +79,6 @@ def main():
         '../docs/journey',       # Journey entries (if they exist)
         '../docs/technical',     # Technical docs (if they exist)
         '../docs/case-studies',  # Production case studies
-        '.',                     # Root directory (CLAUDE.md, README.md)
     ]
 
     # Load all documents
