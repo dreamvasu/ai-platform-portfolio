@@ -66,7 +66,7 @@ class Project(models.Model):
 
 
 class Paper(models.Model):
-    """ML/AI Research Papers"""
+    """Blog Posts - Technical articles and insights"""
     CATEGORY_CHOICES = [
         ('llm', 'Large Language Models'),
         ('cv', 'Computer Vision'),
@@ -79,6 +79,7 @@ class Paper(models.Model):
     ]
 
     SOURCE_CHOICES = [
+        ('blog', 'Blog Post'),
         ('arxiv', 'arXiv'),
         ('huggingface', 'Hugging Face'),
         ('paperswithcode', 'Papers with Code'),
@@ -86,25 +87,25 @@ class Paper(models.Model):
     ]
 
     title = models.CharField(max_length=500)
-    abstract = models.TextField()
-    authors = models.TextField(help_text="Comma-separated list of authors")
-    source = models.CharField(max_length=50, choices=SOURCE_CHOICES)
-    source_id = models.CharField(max_length=200, unique=True, help_text="Unique ID from source")
-    url = models.URLField()
+    abstract = models.TextField(help_text="Full blog post content")
+    authors = models.TextField(help_text="Author name(s)", default="Vasu Kapoor")
+    source = models.CharField(max_length=50, choices=SOURCE_CHOICES, default='blog')
+    source_id = models.CharField(max_length=200, unique=True, help_text="Unique slug/ID")
+    url = models.URLField(blank=True, null=True, help_text="External URL if applicable")
     pdf_url = models.URLField(blank=True, null=True)
     github_url = models.URLField(blank=True, null=True)
     published_date = models.DateField()
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
     tags = models.JSONField(default=list, help_text='["transformers", "attention", ...]')
-    citation_count = models.IntegerField(default=0)
-    relevance_score = models.FloatField(default=0.0, help_text="0-1 score based on relevance")
+    citation_count = models.IntegerField(default=0, help_text="Engagement metric (views/shares)")
+    relevance_score = models.FloatField(default=0.0, help_text="0-1 quality/relevance score")
     is_featured = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['-published_date', '-relevance_score']
-        verbose_name_plural = "Papers"
+        verbose_name_plural = "Blog Posts"
         indexes = [
             models.Index(fields=['-published_date']),
             models.Index(fields=['category']),
@@ -112,7 +113,7 @@ class Paper(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.title[:100]} ({self.get_source_display()})"
+        return f"{self.title[:100]}"
 
 
 class ScraperJob(models.Model):

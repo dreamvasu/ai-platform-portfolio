@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { getPapers } from '../services/api';
-import { ExternalLink, Calendar, User, Tag } from 'lucide-react';
+import { Calendar, User, Tag, ArrowRight } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export default function Papers() {
   const [papers, setPapers] = useState([]);
@@ -38,9 +40,16 @@ export default function Papers() {
     : papers.filter(p => p.category === filter);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-20">
+    <>
+      <SEO
+        title="Technical Blog | Vasu Kapoor - AI/ML Platform Engineering Insights"
+        description="In-depth technical articles on Kubernetes, Terraform, RAG systems, LLM integration, and cloud-native architecture. Learn from production deployments on GCP and Azure."
+        keywords="Kubernetes, Terraform, RAG, LLM, GPT-4, Azure, GCP, DevOps, MLOps, Platform Engineering, Cloud Native"
+      />
+
+      <div className="min-h-screen bg-gray-50">
+        {/* Hero Section */}
+        <section className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-5xl font-bold mb-4">AI Industry Updates</h1>
           <p className="text-xl text-gray-300 max-w-3xl">
@@ -169,26 +178,21 @@ export default function Papers() {
                 )}
 
                 <div className="flex gap-4 pt-4 border-t border-gray-100">
-                  <a
-                    href={paper.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <Link
+                    to={`/blog/${paper.id}`}
                     className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium transition-colors"
                   >
-                    <ExternalLink className="w-4 h-4" />
-                    Read Full Article
-                  </a>
-                  <span className="text-sm text-gray-500">
-                    {paper.source_display}
-                  </span>
+                    <ArrowRight className="w-4 h-4" />
+                    Read Full Post
+                  </Link>
                 </div>
               </article>
             ))}
           </div>
         )}
-      </div>
+        </div>
 
-      {/* Stats Section */}
+        {/* Stats Section */}
       {!loading && papers.length > 0 && (
         <section className="bg-gray-900 text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -218,8 +222,9 @@ export default function Papers() {
               </div>
             </div>
           </div>
-        </section>
-      )}
-    </div>
+          </section>
+        )}
+      </div>
+    </>
   );
 }
