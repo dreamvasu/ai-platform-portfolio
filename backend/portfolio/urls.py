@@ -8,7 +8,8 @@ from .views import (
 from .webhooks import (
     scraper_complete_webhook,
     document_processed_webhook,
-    webhook_health
+    webhook_health,
+    fix_blog_slugs_webhook
 )
 
 router = DefaultRouter()
@@ -28,4 +29,5 @@ urlpatterns = [
     path('webhooks/health/', webhook_health, name='webhook_health'),
     path('webhooks/scraper-complete/', scraper_complete_webhook, name='scraper_complete'),
     path('webhooks/document-processed/', document_processed_webhook, name='document_processed'),
+    path('webhooks/fix-blog-slugs/', fix_blog_slugs_webhook, name='fix_blog_slugs'),
 ]
